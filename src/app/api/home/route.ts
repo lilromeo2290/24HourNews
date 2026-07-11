@@ -68,6 +68,7 @@ export async function GET() {
         where: {
           status: "published",
           publishedAt: { lte: now },
+          category: { slug: { notIn: ['opinion', 'lifestyle'] } },
         },
         include: articleInclude,
         orderBy: { publishedAt: "desc" },
