@@ -11,8 +11,6 @@ import { Input } from '@/components/ui/input'
 import { TrendingUp, Mail, Send } from 'lucide-react'
 import { toast } from 'sonner'
 
-const FEATURED_CATEGORY_SLUGS = ['politics', 'business', 'sports', 'entertainment']
-
 function HeroSkeleton() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -50,15 +48,11 @@ export default function HomePage() {
     isLoading,
     breakingNews,
     featuredArticles,
-    pinnedArticle,
     latestNews,
     trendingNews,
-    popularCategories,
     fetchHomeData,
     fetchCategories,
-    categories,
     navigate,
-    search,
     subscribeNewsletter,
   } = useStore()
 
@@ -85,15 +79,6 @@ export default function HomePage() {
     } finally {
       setNlLoading(false)
     }
-  }
-
-  // Get articles by category slug for the "More from" sections
-  const getCategoryArticles = (slug: string) => {
-    return latestNews.filter((a) => a.category?.slug === slug).slice(0, 3)
-  }
-
-  const getCategoryInfo = (slug: string) => {
-    return categories.find((c) => c.slug === slug)
   }
 
   // Loading state
@@ -184,75 +169,9 @@ export default function HomePage() {
           <aside className="space-y-6">
             {/* Sidebar Ad */}
             <AdBanner position="sidebar" />
-
-            {/* Popular Categories */}
-            {popularCategories.length > 0 && (
-              <div className="rounded-lg border bg-card p-4">
-                <h3 className="font-bold mb-3">Popular Categories</h3>
-                <div className="flex flex-wrap gap-2">
-                  {popularCategories.map((cat) => (
-                    <Button
-                      key={cat.id}
-                      variant="outline"
-                      size="sm"
-                      className="text-xs"
-                      style={{ borderColor: cat.color, color: cat.color }}
-                      onClick={() =>
-                        navigate({
-                          type: 'category',
-                          slug: cat.slug,
-                          categoryName: cat.name,
-                        })
-                      }
-                    >
-                      {cat.name}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
           </aside>
         </div>
       </section>
-
-      {/* More from [Category] sections */}
-      {FEATURED_CATEGORY_SLUGS.map((slug) => {
-        const articles = getCategoryArticles(slug)
-        const catInfo = getCategoryInfo(slug)
-        if (articles.length === 0 || !catInfo) return null
-
-        return (
-          <section key={slug}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span
-                  className="h-4 w-1 rounded-full"
-                  style={{ backgroundColor: catInfo.color }}
-                />
-                <h2 className="text-xl font-bold">More from {catInfo.name}</h2>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() =>
-                  navigate({
-                    type: 'category',
-                    slug: catInfo.slug,
-                    categoryName: catInfo.name,
-                  })
-                }
-              >
-                View All
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {articles.map((article) => (
-                <NewsCard key={article.id} article={article} />
-              ))}
-            </div>
-          </section>
-        )
-      })}
 
       {/* Newsletter Section */}
       <section className="rounded-lg p-8 text-white" style={{ backgroundColor: '#003050' }}>
