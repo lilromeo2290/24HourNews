@@ -75,7 +75,6 @@ export default function NewsCard({ article, variant = 'default' }: NewsCardProps
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         {/* Content overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
-          <div className="mb-2">{categoryBadge}</div>
           <h2 className="mb-2 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight text-white line-clamp-2">
             {article.title}
           </h2>
