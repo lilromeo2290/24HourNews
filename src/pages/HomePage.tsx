@@ -110,30 +110,45 @@ export default function HomePage() {
   }
 
   const heroArticle = featuredArticles[0]
-  const sideFeatured = featuredArticles.slice(1, 3)
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 space-y-8">
       {/* Breaking News Ticker */}
       {breakingNews && breakingNews.length > 0 && <BreakingNewsTicker />}
 
-      {/* Hero Section */}
+      {/* Hero Section + Trending Sidebar */}
       <section>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {heroArticle && (
-            <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Full-width hero */}
+          <div className="lg:col-span-2">
+            {heroArticle ? (
               <NewsCard article={heroArticle} variant="hero" />
-            </div>
-          )}
-          <div className="flex flex-col gap-4">
-            {sideFeatured.map((article) => (
-              <NewsCard key={article.id} article={article} variant="horizontal" />
-            ))}
-            {sideFeatured.length === 0 &&
-              Array.from({ length: 2 }).map((_, i) => (
-                <Skeleton key={i} className="aspect-video w-full rounded-lg" />
-              ))}
+            ) : (
+              <Skeleton className="aspect-[16/9] w-full rounded-lg" />
+            )}
           </div>
+
+          {/* Trending sidebar */}
+          {trendingNews.length > 0 && (
+            <aside className="rounded-lg border bg-card p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <h3 className="font-bold">Trending</h3>
+              </div>
+              <div className="divide-y">
+                {trendingNews.slice(0, 6).map((article, i) => (
+                  <div key={article.id} className="relative">
+                    <span className="absolute -left-1 top-2 text-2xl font-black text-muted-foreground/20">
+                      {i + 1}
+                    </span>
+                    <div className="pl-5">
+                      <NewsCard article={article} variant="compact" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </aside>
+          )}
         </div>
       </section>
 
@@ -182,28 +197,6 @@ export default function HomePage() {
 
           {/* Right sidebar */}
           <aside className="space-y-6">
-            {/* Trending News */}
-            {trendingNews.length > 0 && (
-              <div className="rounded-lg border bg-card p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                  <h3 className="font-bold">Trending</h3>
-                </div>
-                <div className="divide-y">
-                  {trendingNews.slice(0, 6).map((article, i) => (
-                    <div key={article.id} className="relative">
-                      <span className="absolute -left-1 top-2 text-2xl font-black text-muted-foreground/20">
-                        {i + 1}
-                      </span>
-                      <div className="pl-5">
-                        <NewsCard article={article} variant="compact" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Sidebar Ad */}
             <AdBanner position="sidebar" />
 
