@@ -71,7 +71,19 @@ export async function GET() {
         },
         include: articleInclude,
         orderBy: { publishedAt: "desc" },
-        take: 10,
+        take: 30,
+      }).then((articles) => {
+        // Deduplicate: only one article per category
+        const seen = new Set<string>();
+        const deduped: typeof articles = [];
+        for (const a of articles) {
+          if (!seen.has(a.categoryId)) {
+            seen.add(a.categoryId);
+            deduped.push(a);
+          }
+          if (deduped.length >= 10) break;
+        }
+        return deduped;
       }),
 
       db.article.findMany({
