@@ -193,12 +193,15 @@ export default function Footer() {
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row text-sm text-white/50">
           <p>&copy; {new Date().getFullYear()} 24Hour News. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <button className="hover:text-white transition-colors">
-              Privacy Policy
-            </button>
-            <button className="hover:text-white transition-colors">
-              Terms of Service
-            </button>
+            <span>Design & Powered by</span>
+            <a
+              href="https://clipe233eng.net/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors font-medium text-white/70"
+            >
+              Clipe233 Engineers
+            </a>
           </div>
         </div>
       </div>
