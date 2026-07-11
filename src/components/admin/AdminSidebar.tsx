@@ -65,10 +65,10 @@ export default function AdminSidebar() {
             <div className="flex items-center gap-2">
               <img
                 src="/logo.jpg"
-                alt="GNH Admin"
+                alt="24HN Admin"
                 className="h-8 w-8 rounded object-cover"
               />
-              <span className="text-lg font-bold text-white tracking-tight">GNH Admin</span>
+              <span className="text-lg font-bold text-white tracking-tight">24HN Admin</span>
             </div>
           ) : (
             <img

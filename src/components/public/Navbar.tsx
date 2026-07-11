@@ -37,11 +37,11 @@ export default function Navbar() {
         >
           <img
             src="/logo.jpg"
-            alt="GhanaNewsHub"
+            alt="24Hour News"
             className="logo-img rounded"
           />
           <span className="hidden sm:inline text-lg font-bold" style={{ color: '#003050' }}>
-            GhanaNewsHub
+            24Hour News
           </span>
         </button>
 
@@ -126,10 +126,10 @@ export default function Navbar() {
                 <SheetTitle className="flex items-center gap-2">
                   <img
                     src="/logo.jpg"
-                    alt="GhanaNewsHub"
+                    alt="24Hour News"
                     className="logo-img-sm rounded"
                   />
-                  <span style={{ color: '#003050' }}>GhanaNewsHub</span>
+                  <span style={{ color: '#003050' }}>24Hour News</span>
                 </SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col p-4 gap-1">

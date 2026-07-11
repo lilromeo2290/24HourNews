@@ -15,21 +15,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GhanaNewsHub - Your Trusted Source for Ghana & African News",
-  description: "Latest breaking news, politics, business, sports, entertainment, technology and more from Ghana and across Africa. Stay informed with GhanaNewsHub.",
+  title: "24Hour News - Your Trusted Source for Ghana & African News",
+  description: "Latest breaking news, politics, business, sports, entertainment, technology and more from Ghana and across Africa. Stay informed with 24Hour News.",
   keywords: ["Ghana news", "Africa news", "breaking news", "politics", "sports", "business", "entertainment", "technology"],
-  authors: [{ name: "GhanaNewsHub" }],
+  authors: [{ name: "24Hour News" }],
   icons: {
     icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
   },
   openGraph: {
-    title: "GhanaNewsHub - Your Trusted Source for Ghana & African News",
+    title: "24Hour News - Your Trusted Source for Ghana & African News",
     description: "Latest breaking news, politics, business, sports, entertainment from Ghana and Africa.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "GhanaNewsHub",
+    title: "24Hour News",
     description: "Your Trusted Source for Ghana & African News",
   },
 };

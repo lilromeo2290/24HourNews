@@ -51,12 +51,12 @@ export default function LoginPage() {
             <div className="mb-3 flex items-center gap-3">
               <img
                 src="/logo.jpg"
-                alt="GhanaNewsHub"
+                alt="24Hour News"
                 className="logo-img-lg rounded"
               />
             </div>
             <h2 className="text-2xl font-bold" style={{ color: '#003050' }}>
-              GhanaNewsHub
+              24Hour News
             </h2>
             <p className="text-sm text-muted-foreground text-center mt-1">
               Sign in to the admin dashboard
@@ -77,7 +77,7 @@ export default function LoginPage() {
               <Input
                 id="login-email"
                 type="email"
-                placeholder="admin@ghananewshub.com"
+                placeholder="admin@24hournews.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}

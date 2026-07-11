@@ -62,10 +62,10 @@ export default function Footer() {
             >
               <img
                 src="/logo.jpg"
-                alt="GhanaNewsHub"
+                alt="24Hour News"
                 className="logo-img rounded bg-white/10 p-0.5"
               />
-              <span className="text-lg font-bold text-white">GhanaNewsHub</span>
+              <span className="text-lg font-bold text-white">24Hour News</span>
             </button>
             <p className="text-sm text-white/70 leading-relaxed">
               Your trusted source for the latest news, politics, business, sports, and
@@ -191,7 +191,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row text-sm text-white/50">
-          <p>&copy; {new Date().getFullYear()} GhanaNewsHub. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} 24Hour News. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <button className="hover:text-white transition-colors">
               Privacy Policy
