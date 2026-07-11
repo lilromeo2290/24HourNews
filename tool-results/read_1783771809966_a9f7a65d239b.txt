@@ -1,0 +1,862 @@
+     1→'use client'
+     2→
+     3→import { useEffect, useState, useRef, useCallback } from 'react'
+     4→import { useStore } from '@/lib/store'
+     5→import { Button } from '@/components/ui/button'
+     6→import { Input } from '@/components/ui/input'
+     7→import { Textarea } from '@/components/ui/textarea'
+     8→import { Label } from '@/components/ui/label'
+     9→import { Checkbox } from '@/components/ui/checkbox'
+    10→import { Skeleton } from '@/components/ui/skeleton'
+    11→import { Separator } from '@/components/ui/separator'
+    12→import {
+    13→  Select,
+    14→  SelectContent,
+    15→  SelectItem,
+    16→  SelectTrigger,
+    17→  SelectValue,
+    18→} from '@/components/ui/select'
+    19→import {
+    20→  Popover,
+    21→  PopoverContent,
+    22→  PopoverTrigger,
+    23→} from '@/components/ui/popover'
+    24→import {
+    25→  Dialog,
+    26→  DialogContent,
+    27→  DialogHeader,
+    28→  DialogTitle,
+    29→  DialogFooter,
+    30→  DialogDescription,
+    31→} from '@/components/ui/dialog'
+    32→import {
+    33→  Bold,
+    34→  Italic,
+    35→  Underline,
+    36→  Heading1,
+    37→  Heading2,
+    38→  Heading3,
+    39→  List,
+    40→  ListOrdered,
+    41→  Link2,
+    42→  Image as ImageIcon,
+    43→  Quote,
+    44→  Code,
+    45→  Undo2,
+    46→  Redo2,
+    47→  Upload,
+    48→  Eye,
+    49→  Loader2,
+    50→  X,
+    51→} from 'lucide-react'
+    52→import { toast } from 'sonner'
+    53→
+    54→// ---------------------------------------------------------------------------
+    55→// Rich text editor component
+    56→// ---------------------------------------------------------------------------
+    57→
+    58→function RichTextEditor({
+    59→  value,
+    60→  onChange,
+    61→}: {
+    62→  value: string
+    63→  onChange: (html: string) => void
+    64→}) {
+    65→  const editorRef = useRef<HTMLDivElement>(null)
+    66→  const [wordCount, setWordCount] = useState(0)
+    67→
+    68→  useEffect(() => {
+    69→    if (editorRef.current && !editorRef.current.hasAttribute('data-initialized')) {
+    70→      editorRef.current.innerHTML = value
+    71→      editorRef.current.setAttribute('data-initialized', 'true')
+    72→    }
+    73→  }, []) // only on mount
+    74→
+    75→  const handleInput = () => {
+    76→    if (!editorRef.current) return
+    77→    const html = editorRef.current.innerHTML
+    78→    onChange(html)
+    79→    const text = editorRef.current.innerText || ''
+    80→    setWordCount(
+    81→      text
+    82→        .trim()
+    83→        .split(/\s+/)
+    84→        .filter((w) => w.length > 0).length
+    85→    )
+    86→  }
+    87→
+    88→  const execCmd = (command: string, val?: string) => {
+    89→    editorRef.current?.focus()
+    90→    document.execCommand(command, false, val)
+    91→    handleInput()
+    92→  }
+    93→
+    94→  const [linkUrl, setLinkUrl] = useState('')
+    95→  const [linkOpen, setLinkOpen] = useState(false)
+    96→
+    97→  const insertLink = () => {
+    98→    if (linkUrl) {
+    99→      execCmd('createLink', linkUrl)
+   100→      setLinkUrl('')
+   101→      setLinkOpen(false)
+   102→    }
+   103→  }
+   104→
+   105→  const [imageUrl, setImageUrl] = useState('')
+   106→  const [imageOpen, setImageOpen] = useState(false)
+   107→
+   108→  const insertImage = () => {
+   109→    if (imageUrl) {
+   110→      execCmd('insertImage', imageUrl)
+   111→      setImageUrl('')
+   112→      setImageOpen(false)
+   113→    }
+   114→  }
+   115→
+   116→  const ToolbarButton = ({
+   117→    onClick,
+   118→    title,
+   119→    children,
+   120→    active,
+   121→  }: {
+   122→    onClick: () => void
+   123→    title: string
+   124→    children: React.ReactNode
+   125→    active?: boolean
+   126→  }) => (
+   127→    <button
+   128→      type="button"
+   129→      title={title}
+   130→      onClick={onClick}
+   131→      className={`rounded p-1.5 text-sm transition-colors hover:bg-accent ${
+   132→        active ? 'bg-accent text-primary' : 'text-muted-foreground'
+   133→      }`}
+   134→    >
+   135→      {children}
+   136→    </button>
+   137→  )
+   138→
+   139→  return (
+   140→    <div className="space-y-2">
+   141→      {/* Toolbar */}
+   142→      <div className="flex flex-wrap items-center gap-1 rounded-md border bg-muted/30 p-1.5">
+   143→        <ToolbarButton onClick={() => execCmd('bold')} title="Bold">
+   144→          <Bold className="size-4" />
+   145→        </ToolbarButton>
+   146→        <ToolbarButton onClick={() => execCmd('italic')} title="Italic">
+   147→          <Italic className="size-4" />
+   148→        </ToolbarButton>
+   149→        <ToolbarButton onClick={() => execCmd('underline')} title="Underline">
+   150→          <Underline className="size-4" />
+   151→        </ToolbarButton>
+   152→
+   153→        <Separator orientation="vertical" className="mx-1 h-6" />
+   154→
+   155→        <ToolbarButton onClick={() => execCmd('formatBlock', 'h1')} title="Heading 1">
+   156→          <Heading1 className="size-4" />
+   157→        </ToolbarButton>
+   158→        <ToolbarButton onClick={() => execCmd('formatBlock', 'h2')} title="Heading 2">
+   159→          <Heading2 className="size-4" />
+   160→        </ToolbarButton>
+   161→        <ToolbarButton onClick={() => execCmd('formatBlock', 'h3')} title="Heading 3">
+   162→          <Heading3 className="size-4" />
+   163→        </ToolbarButton>
+   164→
+   165→        <Separator orientation="vertical" className="mx-1 h-6" />
+   166→
+   167→        <ToolbarButton onClick={() => execCmd('insertUnorderedList')} title="Bullet List">
+   168→          <List className="size-4" />
+   169→        </ToolbarButton>
+   170→        <ToolbarButton onClick={() => execCmd('insertOrderedList')} title="Numbered List">
+   171→          <ListOrdered className="size-4" />
+   172→        </ToolbarButton>
+   173→
+   174→        <Separator orientation="vertical" className="mx-1 h-6" />
+   175→
+   176→        <Popover open={linkOpen} onOpenChange={setLinkOpen}>
+   177→          <PopoverTrigger asChild>
+   178→            <ToolbarButton onClick={() => setLinkOpen(true)} title="Insert Link">
+   179→              <Link2 className="size-4" />
+   180→            </ToolbarButton>
+   181→          </PopoverTrigger>
+   182→          <PopoverContent className="w-72" side="bottom">
+   183→            <div className="space-y-2">
+   184→              <p className="text-sm font-medium">Insert Link</p>
+   185→              <Input
+   186→                placeholder="https://..."
+   187→                value={linkUrl}
+   188→                onChange={(e) => setLinkUrl(e.target.value)}
+   189→                onKeyDown={(e) => e.key === 'Enter' && insertLink()}
+   190→              />
+   191→              <div className="flex justify-end gap-2">
+   192→                <Button variant="outline" size="sm" onClick={() => setLinkOpen(false)}>
+   193→                  Cancel
+   194→                </Button>
+   195→                <Button size="sm" onClick={insertLink}>
+   196→                  Insert
+   197→                </Button>
+   198→              </div>
+   199→            </div>
+   200→          </PopoverContent>
+   201→        </Popover>
+   202→
+   203→        <Popover open={imageOpen} onOpenChange={setImageOpen}>
+   204→          <PopoverTrigger asChild>
+   205→            <ToolbarButton onClick={() => setImageOpen(true)} title="Insert Image">
+   206→              <ImageIcon className="size-4" />
+   207→            </ToolbarButton>
+   208→          </PopoverTrigger>
+   209→          <PopoverContent className="w-72" side="bottom">
+   210→            <div className="space-y-2">
+   211→              <p className="text-sm font-medium">Insert Image</p>
+   212→              <Input
+   213→                placeholder="Image URL..."
+   214→                value={imageUrl}
+   215→                onChange={(e) => setImageUrl(e.target.value)}
+   216→                onKeyDown={(e) => e.key === 'Enter' && insertImage()}
+   217→              />
+   218→              <div className="flex justify-end gap-2">
+   219→                <Button variant="outline" size="sm" onClick={() => setImageOpen(false)}>
+   220→                  Cancel
+   221→                </Button>
+   222→                <Button size="sm" onClick={insertImage}>
+   223→                  Insert
+   224→                </Button>
+   225→              </div>
+   226→            </div>
+   227→          </PopoverContent>
+   228→        </Popover>
+   229→
+   230→        <Separator orientation="vertical" className="mx-1 h-6" />
+   231→
+   232→        <ToolbarButton onClick={() => execCmd('formatBlock', 'blockquote')} title="Blockquote">
+   233→          <Quote className="size-4" />
+   234→        </ToolbarButton>
+   235→        <ToolbarButton onClick={() => execCmd('formatBlock', 'pre')} title="Code Block">
+   236→          <Code className="size-4" />
+   237→        </ToolbarButton>
+   238→
+   239→        <Separator orientation="vertical" className="mx-1 h-6" />
+   240→
+   241→        <ToolbarButton onClick={() => execCmd('undo')} title="Undo">
+   242→          <Undo2 className="size-4" />
+   243→        </ToolbarButton>
+   244→        <ToolbarButton onClick={() => execCmd('redo')} title="Redo">
+   245→          <Redo2 className="size-4" />
+   246→        </ToolbarButton>
+   247→      </div>
+   248→
+   249→      {/* Editor area */}
+   250→      <div
+   251→        ref={editorRef}
+   252→        contentEditable
+   253→        suppressContentEditableWarning
+   254→        onInput={handleInput}
+   255→        className="prose-editor min-h-[300px] cursor-text rounded-md border p-4 focus:outline-none focus:ring-2 focus:ring-primary"
+   256→        style={{ whiteSpace: 'pre-wrap' }}
+   257→      />
+   258→
+   259→      <p className="text-right text-xs text-muted-foreground">
+   260→        {wordCount} word{wordCount !== 1 ? 's' : ''}
+   261→      </p>
+   262→    </div>
+   263→  )
+   264→}
+   265→
+   266→// ---------------------------------------------------------------------------
+   267→// Article Editor page
+   268→// ---------------------------------------------------------------------------
+   269→
+   270→function generateSlug(title: string): string {
+   271→  return title
+   272→    .toLowerCase()
+   273→    .trim()
+   274→    .replace(/[^\w\s-]/g, '')
+   275→    .replace(/[\s_]+/g, '-')
+   276→    .replace(/^-+|-+$/g, '')
+   277→}
+   278→
+   279→export default function AdminArticleEditor() {
+   280→  const {
+   281→    currentPage,
+   282→    currentArticle,
+   283→    categories,
+   284→    adminUsers,
+   285→    token,
+   286→    createArticle,
+   287→    updateArticle,
+   288→    publishArticle,
+   289→    fetchArticleById,
+   290→    fetchCategories,
+   291→    fetchAdminUsers,
+   292→    navigate,
+   293→    isLoading,
+   294→  } = useStore()
+   295→
+   296→  const isEditing = currentPage.type === 'admin-article-edit'
+   297→  const editId = isEditing ? (currentPage as { type: 'admin-article-edit'; id: string }).id : null
+   298→
+   299→  // Form state
+   300→  const [title, setTitle] = useState('')
+   301→  const [slug, setSlug] = useState('')
+   302→  const [slugEdited, setSlugEdited] = useState(false)
+   303→  const [excerpt, setExcerpt] = useState('')
+   304→  const [content, setContent] = useState('')
+   305→  const [featuredImage, setFeaturedImage] = useState('')
+   306→  const [categoryId, setCategoryId] = useState('')
+   307→  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([])
+   308→  const [authorId, setAuthorId] = useState('')
+   309→  const [seoTitle, setSeoTitle] = useState('')
+   310→  const [seoDescription, setSeoDescription] = useState('')
+   311→  const [scheduledAt, setScheduledAt] = useState('')
+   312→  const [isFeatured, setIsFeatured] = useState(false)
+   313→  const [isPinned, setIsPinned] = useState(false)
+   314→  const [isBreaking, setIsBreaking] = useState(false)
+   315→
+   316→  // UI state
+   317→  const [publishing, setPublishing] = useState(false)
+   318→  const [saving, setSaving] = useState(false)
+   319→  const [uploading, setUploading] = useState(false)
+   320→
+   321→  // Tags
+   322→  const [allTags, setAllTags] = useState<{ id: string; name: string; slug: string }[]>([])
+   323→  const [tagsOpen, setTagsOpen] = useState(false)
+   324→
+   325→  // Load existing article
+   326→  useEffect(() => {
+   327→    if (isEditing && editId) {
+   328→      fetchArticleById(editId)
+   329→    }
+   330→  }, [isEditing, editId, fetchArticleById])
+   331→
+   332→  useEffect(() => {
+   333→    if (isEditing && currentArticle) {
+   334→      setTitle(currentArticle.title)
+   335→      setSlug(currentArticle.slug)
+   336→      setSlugEdited(true)
+   337→      setExcerpt(currentArticle.excerpt ?? '')
+   338→      setContent(currentArticle.content)
+   339→      setFeaturedImage(currentArticle.featuredImage ?? '')
+   340→      setCategoryId(currentArticle.categoryId)
+   341→      setSelectedTagIds(currentArticle.tags?.map((t) => t.id) ?? [])
+   342→      setAuthorId(currentArticle.authorId)
+   343→      setIsFeatured(currentArticle.isFeatured)
+   344→      setIsPinned(currentArticle.isPinned)
+   345→      setIsBreaking(currentArticle.isBreaking)
+   346→    }
+   347→  }, [isEditing, currentArticle])
+   348→
+   349→  // Load categories & users
+   350→  useEffect(() => {
+   351→    fetchCategories()
+   352→    fetchAdminUsers()
+   353→  }, [fetchCategories, fetchAdminUsers])
+   354→
+   355→  // Load tags from API
+   356→  useEffect(() => {
+   357→    const loadTags = async () => {
+   358→      try {
+   359→        const res = await fetch('/api/tags')
+   360→        if (res.ok) {
+   361→          const data = await res.json()
+   362→          setAllTags(Array.isArray(data) ? data : data.tags ?? data.data ?? [])
+   363→        }
+   364→      } catch {
+   365→        // Tags endpoint may not exist, that's fine
+   366→      }
+   367→    }
+   368→    loadTags()
+   369→  }, [])
+   370→
+   371→  // Auto-generate slug from title
+   372→  const handleTitleChange = (val: string) => {
+   373→    setTitle(val)
+   374→    if (!slugEdited) {
+   375→      setSlug(generateSlug(val))
+   376→    }
+   377→  }
+   378→
+   379→  // Toggle tag selection
+   380→  const toggleTag = (tagId: string) => {
+   381→    setSelectedTagIds((prev) =>
+   382→      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
+   383→    )
+   384→  }
+   385→
+   386→  // Image upload
+   387→  const fileInputRef = useRef<HTMLInputElement>(null)
+   388→
+   389→  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+   390→    const file = e.target.files?.[0]
+   391→    if (!file) return
+   392→    setUploading(true)
+   393→    try {
+   394→      const formData = new FormData()
+   395→      formData.append('file', file)
+   396→      const res = await fetch('/api/media/upload', {
+   397→        method: 'POST',
+   398→        headers: token ? { Authorization: `Bearer ${token}` } : {},
+   399→        body: formData,
+   400→      })
+   401→      if (!res.ok) {
+   402→        const body = await res.json().catch(() => ({}))
+   403→        throw new Error(body.message || 'Upload failed')
+   404→      }
+   405→      const data = await res.json()
+   406→      setFeaturedImage(data.url ?? data.data?.url ?? '')
+   407→      toast.success('Image uploaded successfully')
+   408→    } catch (err: any) {
+   409→      toast.error(err.message || 'Failed to upload image')
+   410→    } finally {
+   411→      setUploading(false)
+   412→      if (fileInputRef.current) fileInputRef.current.value = ''
+   413→    }
+   414→  }
+   415→
+   416→  // Build article data
+   417→  const buildData = () => ({
+   418→    title,
+   419→    slug,
+   420→    excerpt,
+   421→    content,
+   422→    featuredImage,
+   423→    categoryId,
+   424→    tagIds: selectedTagIds,
+   425→    authorId,
+   426→    seoTitle,
+   427→    seoDescription,
+   428→    scheduledAt: scheduledAt || undefined,
+   429→    isFeatured,
+   430→    isPinned,
+   431→    isBreaking,
+   432→  })
+   433→
+   434→  // Save draft
+   435→  const handleSaveDraft = async () => {
+   436→    if (!title.trim()) {
+   437→      toast.error('Title is required')
+   438→      return
+   439→    }
+   440→    setSaving(true)
+   441→    try {
+   442→      if (isEditing && editId) {
+   443→        await updateArticle(editId, { ...buildData(), status: 'draft' })
+   444→      } else {
+   445→        await createArticle({ ...buildData(), status: 'draft' })
+   446→      }
+   447→      toast.success('Draft saved')
+   448→    } catch (err: any) {
+   449→      toast.error(err.message || 'Failed to save draft')
+   450→    } finally {
+   451→      setSaving(false)
+   452→    }
+   453→  }
+   454→
+   455→  // Submit for review
+   456→  const handleSubmitForReview = async () => {
+   457→    if (!title.trim()) {
+   458→      toast.error('Title is required')
+   459→      return
+   460→    }
+   461→    setSaving(true)
+   462→    try {
+   463→      if (isEditing && editId) {
+   464→        await updateArticle(editId, { ...buildData(), status: 'pending' })
+   465→      } else {
+   466→        await createArticle({ ...buildData(), status: 'pending' })
+   467→      }
+   468→      toast.success('Article submitted for review')
+   469→    } catch (err: any) {
+   470→      toast.error(err.message || 'Failed to submit')
+   471→    } finally {
+   472→      setSaving(false)
+   473→    }
+   474→  }
+   475→
+   476→  // Publish — with all the critical requirements
+   477→  const handlePublish = async () => {
+   478→    // 1. Validate required fields
+   479→    if (!title.trim()) {
+   480→      toast.error('Title is required')
+   481→      return
+   482→    }
+   483→    if (!content.trim() || content === '<br>') {
+   484→      toast.error('Content is required')
+   485→      return
+   486→    }
+   487→    if (!categoryId) {
+   488→      toast.error('Please select a category')
+   489→      return
+   490→    }
+   491→
+   492→    setPublishing(true)
+   493→    try {
+   494→      const data = buildData()
+   495→
+   496→      if (isEditing && editId) {
+   497→        // 3. Editing: update then publish if not already published
+   498→        await updateArticle(editId, { ...data, status: 'published' })
+   499→        if (currentArticle?.status !== 'published') {
+   500→          await publishArticle(editId)
+   501→        }
+   502→      } else {
+   503→        // 2. Creating: create then publish
+   504→        const article = await createArticle({ ...data, status: 'published' })
+   505→        await publishArticle(article.id)
+   506→      }
+   507→
+   508→      // 5. Show success notification
+   509→      toast.success('Article published successfully!')
+   510→      // 7. Navigate back to article list
+   511→      navigate({ type: 'admin-articles' })
+   512→    } catch (err: any) {
+   513→      // 6. On error: show error message from API
+   514→      toast.error(err.message || 'Failed to publish article')
+   515→    } finally {
+   516→      setPublishing(false)
+   517→    }
+   518→  }
+   519→
+   520→  // Preview
+   521→  const handlePreview = () => {
+   522→    if (isEditing && editId) {
+   523→      navigate({ type: 'admin-article-preview', id: editId })
+   524→    }
+   525→  }
+   526→
+   527→  // Loading state for editing
+   528→  if (isEditing && isLoading && !currentArticle) {
+   529→    return (
+   530→      <div className="space-y-6">
+   531→        <Skeleton className="h-10 w-48" />
+   532→        <Skeleton className="h-12 w-full" />
+   533→        <Skeleton className="h-12 w-full" />
+   534→        <Skeleton className="h-[300px] w-full" />
+   535→      </div>
+   536→    )
+   537→  }
+   538→
+   539→  return (
+   540→    <div className="space-y-6">
+   541→      {/* Top actions */}
+   542→      <div className="flex flex-wrap items-center justify-between gap-3">
+   543→        <h2 className="text-2xl font-bold">
+   544→          {isEditing ? 'Edit Article' : 'Create Article'}
+   545→        </h2>
+   546→        <div className="flex items-center gap-2">
+   547→          {isEditing && (
+   548→            <Button variant="outline" onClick={handlePreview}>
+   549→              <Eye className="mr-2 size-4" />
+   550→              Preview
+   551→            </Button>
+   552→          )}
+   553→          <Button variant="outline" onClick={handleSaveDraft} disabled={saving}>
+   554→            {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+   555→            Save Draft
+   556→          </Button>
+   557→          <Button
+   558→            variant="outline"
+   559→            onClick={handleSubmitForReview}
+   560→            disabled={saving}
+   561→          >
+   562→            {saving ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+   563→            Submit for Review
+   564→          </Button>
+   565→          <Button onClick={handlePublish} disabled={publishing}>
+   566→            {publishing ? (
+   567→              <Loader2 className="mr-2 size-4 animate-spin" />
+   568→            ) : null}
+   569→            Publish
+   570→          </Button>
+   571→        </div>
+   572→      </div>
+   573→
+   574→      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+   575→        {/* Main content area */}
+   576→        <div className="space-y-5">
+   577→          {/* Title */}
+   578→          <div className="space-y-1.5">
+   579→            <Label htmlFor="title">Title</Label>
+   580→            <Input
+   581→              id="title"
+   582→              placeholder="Enter article title..."
+   583→              value={title}
+   584→              onChange={(e) => handleTitleChange(e.target.value)}
+   585→              className="text-lg"
+   586→            />
+   587→          </div>
+   588→
+   589→          {/* Slug */}
+   590→          <div className="space-y-1.5">
+   591→            <Label htmlFor="slug">Slug</Label>
+   592→            <div className="flex items-center gap-2">
+   593→              <Input
+   594→                id="slug"
+   595→                placeholder="article-url-slug"
+   596→                value={slug}
+   597→                onChange={(e) => {
+   598→                  setSlug(e.target.value)
+   599→                  setSlugEdited(true)
+   600→                }}
+   601→                className="flex-1"
+   602→              />
+   603→              {!slugEdited && (
+   604→                <Button
+   605→                  variant="ghost"
+   606→                  size="sm"
+   607→                  onClick={() => {
+   608→                    setSlugEdited(true)
+   609→                    setSlug(generateSlug(title))
+   610→                  }}
+   611→                  className="shrink-0"
+   612→                >
+   613→                  Edit
+   614→                </Button>
+   615→              )}
+   616→            </div>
+   617→          </div>
+   618→
+   619→          {/* Excerpt */}
+   620→          <div className="space-y-1.5">
+   621→            <Label htmlFor="excerpt">Excerpt</Label>
+   622→            <Textarea
+   623→              id="excerpt"
+   624→              placeholder="Write a short excerpt..."
+   625→              value={excerpt}
+   626→              onChange={(e) => setExcerpt(e.target.value)}
+   627→              rows={3}
+   628→            />
+   629→          </div>
+   630→
+   631→          {/* Rich text editor */}
+   632→          <div className="space-y-1.5">
+   633→            <Label>Content</Label>
+   634→            <RichTextEditor value={content} onChange={setContent} />
+   635→          </div>
+   636→        </div>
+   637→
+   638→        {/* Sidebar */}
+   639→        <div className="space-y-5">
+   640→          {/* Featured Image */}
+   641→          <div className="space-y-3 rounded-lg border p-4">
+   642→            <Label>Featured Image</Label>
+   643→            {featuredImage && (
+   644→              <div className="relative aspect-video overflow-hidden rounded-md border bg-muted">
+   645→                <img
+   646→                  src={featuredImage}
+   647→                  alt="Featured"
+   648→                  className="size-full object-cover"
+   649→                />
+   650→                <Button
+   651→                  variant="destructive"
+   652→                  size="icon"
+   653→                  className="absolute right-2 top-2 size-7"
+   654→                  onClick={() => setFeaturedImage('')}
+   655→                >
+   656→                  <X className="size-3.5" />
+   657→                </Button>
+   658→              </div>
+   659→            )}
+   660→            <div className="space-y-2">
+   661→              <Input
+   662→                placeholder="Image URL..."
+   663→                value={featuredImage}
+   664→                onChange={(e) => setFeaturedImage(e.target.value)}
+   665→              />
+   666→              <input
+   667→                ref={fileInputRef}
+   668→                type="file"
+   669→                accept="image/*"
+   670→                className="hidden"
+   671→                onChange={handleImageUpload}
+   672→              />
+   673→              <Button
+   674→                variant="outline"
+   675→                size="sm"
+   676→                className="w-full"
+   677→                disabled={uploading}
+   678→                onClick={() => fileInputRef.current?.click()}
+   679→              >
+   680→                {uploading ? (
+   681→                  <Loader2 className="mr-2 size-4 animate-spin" />
+   682→                ) : (
+   683→                  <Upload className="mr-2 size-4" />
+   684→                )}
+   685→                {uploading ? 'Uploading...' : 'Upload Image'}
+   686→              </Button>
+   687→            </div>
+   688→          </div>
+   689→
+   690→          {/* Category */}
+   691→          <div className="space-y-1.5 rounded-lg border p-4">
+   692→            <Label>Category</Label>
+   693→            <Select value={categoryId} onValueChange={setCategoryId}>
+   694→              <SelectTrigger className="w-full">
+   695→                <SelectValue placeholder="Select category" />
+   696→              </SelectTrigger>
+   697→              <SelectContent>
+   698→                {categories.map((cat) => (
+   699→                  <SelectItem key={cat.id} value={cat.id}>
+   700→                    {cat.name}
+   701→                  </SelectItem>
+   702→                ))}
+   703→              </SelectContent>
+   704→            </Select>
+   705→          </div>
+   706→
+   707→          {/* Tags */}
+   708→          <div className="space-y-1.5 rounded-lg border p-4">
+   709→            <div className="flex items-center justify-between">
+   710→              <Label>Tags</Label>
+   711→              <Dialog open={tagsOpen} onOpenChange={setTagsOpen}>
+   712→                <Button variant="ghost" size="sm" onClick={() => setTagsOpen(true)}>
+   713→                  {allTags.length > 0 ? 'Select' : 'Manage'}
+   714→                </Button>
+   715→                <DialogContent>
+   716→                  <DialogHeader>
+   717→                    <DialogTitle>Select Tags</DialogTitle>
+   718→                    <DialogDescription>
+   719→                      Choose tags for this article.
+   720→                    </DialogDescription>
+   721→                  </DialogHeader>
+   722→                  {allTags.length > 0 ? (
+   723→                    <div className="max-h-60 space-y-2 overflow-y-auto">
+   724→                      {allTags.map((tag) => (
+   725→                        <label
+   726→                          key={tag.id}
+   727→                          className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 hover:bg-accent"
+   728→                        >
+   729→                          <Checkbox
+   730→                            checked={selectedTagIds.includes(tag.id)}
+   731→                            onCheckedChange={() => toggleTag(tag.id)}
+   732→                          />
+   733→                          <span className="text-sm">{tag.name}</span>
+   734→                        </label>
+   735→                      ))}
+   736→                    </div>
+   737→                  ) : (
+   738→                    <p className="py-4 text-center text-muted-foreground">
+   739→                      No tags available. Create tags via the API.
+   740→                    </p>
+   741→                  )}
+   742→                  <DialogFooter>
+   743→                    <Button variant="outline" onClick={() => setTagsOpen(false)}>
+   744→                      Done
+   745→                    </Button>
+   746→                  </DialogFooter>
+   747→                </DialogContent>
+   748→              </Dialog>
+   749→            </div>
+   750→            {selectedTagIds.length > 0 ? (
+   751→              <div className="flex flex-wrap gap-1">
+   752→                {selectedTagIds.map((id) => {
+   753→                  const tag = allTags.find((t) => t.id === id)
+   754→                  return tag ? (
+   755→                    <span
+   756→                      key={id}
+   757→                      className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs"
+   758→                    >
+   759→                      {tag.name}
+   760→                      <button
+   761→                        onClick={() => toggleTag(id)}
+   762→                        className="text-muted-foreground hover:text-foreground"
+   763→                      >
+   764→                        <X className="size-3" />
+   765→                      </button>
+   766→                    </span>
+   767→                  ) : null
+   768→                })}
+   769→              </div>
+   770→            ) : (
+   771→              <p className="text-xs text-muted-foreground">No tags selected</p>
+   772→            )}
+   773→          </div>
+   774→
+   775→          {/* Author */}
+   776→          <div className="space-y-1.5 rounded-lg border p-4">
+   777→            <Label>Author</Label>
+   778→            <Select value={authorId} onValueChange={setAuthorId}>
+   779→              <SelectTrigger className="w-full">
+   780→                <SelectValue placeholder="Select author" />
+   781→              </SelectTrigger>
+   782→              <SelectContent>
+   783→                {adminUsers.map((u) => (
+   784→                  <SelectItem key={u.id} value={u.id}>
+   785→                    {u.name}
+   786→                  </SelectItem>
+   787→                ))}
+   788→              </SelectContent>
+   789→            </Select>
+   790→          </div>
+   791→
+   792→          {/* SEO */}
+   793→          <div className="space-y-3 rounded-lg border p-4">
+   794→            <Label className="font-semibold">SEO</Label>
+   795→            <div className="space-y-1.5">
+   796→              <Label htmlFor="seo-title" className="text-xs text-muted-foreground">
+   797→                SEO Title
+   798→              </Label>
+   799→              <Input
+   800→                id="seo-title"
+   801→                placeholder="Meta title..."
+   802→                value={seoTitle}
+   803→                onChange={(e) => setSeoTitle(e.target.value)}
+   804→              />
+   805→            </div>
+   806→            <div className="space-y-1.5">
+   807→              <Label
+   808→                htmlFor="seo-desc"
+   809→                className="text-xs text-muted-foreground"
+   810→              >
+   811→                SEO Description
+   812→              </Label>
+   813→              <Textarea
+   814→                id="seo-desc"
+   815→                placeholder="Meta description..."
+   816→                value={seoDescription}
+   817→                onChange={(e) => setSeoDescription(e.target.value)}
+   818→                rows={2}
+   819→              />
+   820→            </div>
+   821→          </div>
+   822→
+   823→          {/* Schedule */}
+   824→          <div className="space-y-1.5 rounded-lg border p-4">
+   825→            <Label htmlFor="schedule">Schedule Publishing</Label>
+   826→            <Input
+   827→              id="schedule"
+   828→              type="datetime-local"
+   829→              value={scheduledAt}
+   830→              onChange={(e) => setScheduledAt(e.target.value)}
+   831→            />
+   832→          </div>
+   833→
+   834→          {/* Toggles */}
+   835→          <div className="space-y-3 rounded-lg border p-4">
+   836→            <label className="flex items-center gap-2 cursor-pointer">
+   837→              <Checkbox
+   838→                checked={isFeatured}
+   839→                onCheckedChange={(v) => setIsFeatured(v === true)}
+   840→              />
+   841→              <span className="text-sm font-medium">Featured Article</span>
+   842→            </label>
+   843→            <label className="flex items-center gap-2 cursor-pointer">
+   844→              <Checkbox
+   845→                checked={isPinned}
+   846→                onCheckedChange={(v) => setIsPinned(v === true)}
+   847→              />
+   848→              <span className="text-sm font-medium">Pinned Article</span>
+   849→            </label>
+   850→            <label className="flex items-center gap-2 cursor-pointer">
+   851→              <Checkbox
+   852→                checked={isBreaking}
+   853→                onCheckedChange={(v) => setIsBreaking(v === true)}
+   854→              />
+   855→              <span className="text-sm font-medium">Breaking News</span>
+   856→            </label>
+   857→          </div>
+   858→        </div>
+   859→      </div>
+   860→    </div>
+   861→  )
+   862→}

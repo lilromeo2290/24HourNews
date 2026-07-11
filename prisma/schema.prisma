@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  passwordHash  String
+  role          String   @default("reporter") // super_admin, admin, editor, reporter
+  avatar        String?
+  bio           String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  articles    Article[]
+  comments    Comment[]
+  activities  Activity[]
+  media       Media[]
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  color       String   @default("#e11d48")
+  icon        String?
+  order       Int      @default(0)
+  isVisible   Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  articles Article[]
+}
+
+model Article {
+  id              String    @id @default(cuid())
+  title           String
+  slug            String    @unique
+  excerpt         String?
+  content         String    @default("")
+  featuredImage   String?
+  status          String    @default("draft") // draft, pending, published, archived
+  isFeatured      Boolean   @default(false)
+  isPinned        Boolean   @default(false)
+  isBreaking      Boolean   @default(false)
+  publishedAt     DateTime?
+  scheduledAt     DateTime?
+  seoTitle        String?
+  seoDescription  String?
+  readingTime     Int       @default(0)
+  viewCount       Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  authorId    String
+  categoryId  String
+
+  author      User      @relation(fields: [authorId], references: [id])
+  category    Category  @relation(fields: [categoryId], references: [id])
+
+  tags       ArticleTag[]
+  comments   Comment[]
+  activities Activity[]
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  articles ArticleTag[]
+}
+
+model ArticleTag {
+  articleId String
+  tagId     String
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  status    String   @default("pending") // pending, approved, rejected, spam
+  authorName String
+  authorEmail String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  articleId String
+  userId    String?
+
+  article Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  type      String   // image, video
+  size      Int
+  folder    String   @default("uploads")
+  createdAt DateTime @default(now())
+
+  authorId String
+
+  author User @relation(fields: [authorId], references: [id])
+}
+
+model Advertisement {
+  id          String   @id @default(cuid())
+  title       String
+  imageUrl    String
+  linkUrl     String?
+  position    String   // banner, sidebar, in_article, footer
+  isActive    Boolean  @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+  clicks      Int      @default(0)
+  impressions Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Newsletter {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  type      String   // view, comment, login, create, update, delete
+  metadata  String?  // JSON string
+  createdAt DateTime @default(now())
+
+  userId    String?
+  articleId String?
+
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  article Article? @relation(fields: [articleId], references: [id], onDelete: SetNull)
+}
