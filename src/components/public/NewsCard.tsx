@@ -146,10 +146,7 @@ export default function NewsCard({ article, variant = 'default' }: NewsCardProps
         className="group flex items-start gap-3 cursor-pointer text-left w-full py-2 border-b last:border-b-0"
       >
         <div className="flex flex-col min-w-0 flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            {categoryBadge}
-            <span className="text-[11px] text-muted-foreground">{absoluteDate}</span>
-          </div>
+          <span className="text-[11px] text-muted-foreground mb-1">{absoluteDate}</span>
           <h4 className="text-sm font-medium leading-snug line-clamp-2 group-hover:text-primary transition-colors">
             {article.title}
           </h4>
