@@ -9,11 +9,14 @@ export default function BreakingNewsTicker() {
   if (!breakingNews || breakingNews.length === 0) return null
 
   return (
-    <div className="relative overflow-hidden bg-red-700 text-white">
+    <div className="relative overflow-hidden text-white" style={{ backgroundColor: '#003050' }}>
       <div className="flex h-8 items-center">
         {/* BREAKING label */}
-        <div className="relative z-10 flex shrink-0 items-center gap-1.5 bg-red-900 px-4 h-full font-bold text-xs uppercase tracking-wider">
-          <Zap className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+        <div
+          className="relative z-10 flex shrink-0 items-center gap-1.5 px-4 h-full font-bold text-xs uppercase tracking-wider"
+          style={{ backgroundColor: '#f08010' }}
+        >
+          <Zap className="h-3.5 w-3.5 fill-white text-white" />
           <span>Breaking</span>
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
@@ -32,7 +35,7 @@ export default function BreakingNewsTicker() {
               >
                 <span className="font-semibold">{article.title}</span>
                 {i < breakingNews.length - 1 && (
-                  <span className="text-red-300 mx-2">●</span>
+                  <span className="mx-2 opacity-50">●</span>
                 )}
               </button>
             ))}

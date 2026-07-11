@@ -1,0 +1,1269 @@
+     1→import { create } from 'zustand'
+     2→import { persist, createJSONStorage } from 'zustand/middleware'
+     3→
+     4→// ---------------------------------------------------------------------------
+     5→// Entity Interfaces
+     6→// ---------------------------------------------------------------------------
+     7→
+     8→export interface Author {
+     9→  id: string
+    10→  name: string
+    11→  avatar?: string
+    12→}
+    13→
+    14→export interface CategoryBasic {
+    15→  id: string
+    16→  name: string
+    17→  slug: string
+    18→  color: string
+    19→}
+    20→
+    21→export interface Tag {
+    22→  id: string
+    23→  name: string
+    24→  slug: string
+    25→}
+    26→
+    27→export interface Article {
+    28→  id: string
+    29→  title: string
+    30→  slug: string
+    31→  excerpt?: string
+    32→  content: string
+    33→  featuredImage?: string
+    34→  status: string
+    35→  isFeatured: boolean
+    36→  isPinned: boolean
+    37→  isBreaking: boolean
+    38→  publishedAt?: string
+    39→  readingTime: number
+    40→  viewCount: number
+    41→  createdAt: string
+    42→  updatedAt: string
+    43→  authorId: string
+    44→  categoryId: string
+    45→  author: Author
+    46→  category: CategoryBasic
+    47→  tags: Tag[]
+    48→}
+    49→
+    50→export interface ArticleFull extends Article {
+    51→  author: Author & { bio?: string }
+    52→  category: CategoryBasic & { description?: string }
+    53→  tags: Tag[]
+    54→}
+    55→
+    56→export interface Category {
+    57→  id: string
+    58→  name: string
+    59→  slug: string
+    60→  color: string
+    61→  description?: string
+    62→  articleCount?: number
+    63→  order?: number
+    64→  createdAt: string
+    65→  updatedAt: string
+    66→}
+    67→
+    68→export interface Comment {
+    69→  id: string
+    70→  content: string
+    71→  authorName: string
+    72→  authorEmail: string
+    73→  articleId: string
+    74→  article?: { id: string; title: string; slug: string }
+    75→  status: 'pending' | 'approved' | 'rejected'
+    76→  createdAt: string
+    77→  updatedAt: string
+    78→  parentId?: string
+    79→  replies?: Comment[]
+    80→}
+    81→
+    82→export interface User {
+    83→  id: string
+    84→  email: string
+    85→  name: string
+    86→  role: 'admin' | 'editor' | 'author' | 'user'
+    87→  avatar?: string
+    88→  bio?: string
+    89→  isActive: boolean
+    90→  createdAt: string
+    91→  updatedAt: string
+    92→}
+    93→
+    94→export interface Media {
+    95→  id: string
+    96→  filename: string
+    97→  originalName: string
+    98→  mimeType: string
+    99→  size: number
+   100→  url: string
+   101→  alt?: string
+   102→  createdAt: string
+   103→  uploadedBy?: string
+   104→}
+   105→
+   106→export interface Advertisement {
+   107→  id: string
+   108→  title: string
+   109→  type: 'banner' | 'sidebar' | 'footer' | 'popup'
+   110→  imageUrl: string
+   111→  linkUrl?: string
+   112→  position?: string
+   113→  isActive: boolean
+   114→  startDate?: string
+   115→  endDate?: string
+   116→  clickCount: number
+   117→  impressionCount: number
+   118→  createdAt: string
+   119→  updatedAt: string
+   120→}
+   121→
+   122→export interface Ad {
+   123→  id: string
+   124→  title: string
+   125→  imageUrl: string
+   126→  linkUrl?: string
+   127→  position?: string
+   128→  type: string
+   129→  isActive: boolean
+   130→}
+   131→
+   132→// ---------------------------------------------------------------------------
+   133→// Page (routing) types
+   134→// ---------------------------------------------------------------------------
+   135→
+   136→export type Page =
+   137→  | { type: 'home' }
+   138→  | { type: 'article'; slug: string }
+   139→  | { type: 'category'; slug: string; categoryName: string }
+   140→  | { type: 'search'; query?: string; categoryId?: string }
+   141→  | { type: 'login' }
+   142→  | { type: 'admin-dashboard' }
+   143→  | { type: 'admin-articles' }
+   144→  | { type: 'admin-article-create' }
+   145→  | { type: 'admin-article-edit'; id: string }
+   146→  | { type: 'admin-article-preview'; id: string }
+   147→  | { type: 'admin-categories' }
+   148→  | { type: 'admin-users' }
+   149→  | { type: 'admin-comments' }
+   150→  | { type: 'admin-media' }
+   151→  | { type: 'admin-ads' }
+   152→  | { type: 'admin-settings' }
+   153→
+   154→// ---------------------------------------------------------------------------
+   155→// Auth-related types
+   156→// ---------------------------------------------------------------------------
+   157→
+   158→export interface AuthUser {
+   159→  id: string
+   160→  email: string
+   161→  name: string
+   162→  role: 'admin' | 'editor' | 'author' | 'user'
+   163→  avatar?: string
+   164→  bio?: string
+   165→  isActive: boolean
+   166→}
+   167→
+   168→// ---------------------------------------------------------------------------
+   169→// Analytics
+   170→// ---------------------------------------------------------------------------
+   171→
+   172→export interface DashboardStats {
+   173→  totalPosts: number
+   174→  publishedPosts: number
+   175→  drafts: number
+   176→  pendingApproval: number
+   177→  totalCategories: number
+   178→  totalUsers: number
+   179→  totalViews: number
+   180→  totalComments: number
+   181→}
+   182→
+   183→export interface DailyViews {
+   184→  date: string
+   185→  views: number
+   186→}
+   187→
+   188→// ---------------------------------------------------------------------------
+   189→// Search / filter types
+   190→// ---------------------------------------------------------------------------
+   191→
+   192→export interface SearchFilters {
+   193→  categoryId?: string
+   194→  dateFrom?: string
+   195→  dateTo?: string
+   196→  authorId?: string
+   197→  tagId?: string
+   198→}
+   199→
+   200→export interface AdminArticleFilters {
+   201→  status?: string
+   202→  categoryId?: string
+   203→  search?: string
+   204→}
+   205→
+   206→export interface AdminCommentFilters {
+   207→  status?: string
+   208→  articleId?: string
+   209→  search?: string
+   210→}
+   211→
+   212→// ---------------------------------------------------------------------------
+   213→// Helper: API client
+   214→// ---------------------------------------------------------------------------
+   215→
+   216→// Module-level token ref that the store updates on login/logout
+   217→let _authToken: string | null = null
+   218→
+   219→export function setAuthToken(token: string | null) {
+   220→  _authToken = token
+   221→}
+   222→
+   223→async function apiFetch<T>(
+   224→  path: string,
+   225→  options: RequestInit = {},
+   226→): Promise<T> {
+   227→  let headers: Record<string, string> = {
+   228→    'Content-Type': 'application/json',
+   229→    ...(options.headers as Record<string, string>),
+   230→  }
+   231→
+   232→  // Use in-memory token first, fall back to localStorage
+   233→  const token = _authToken ?? (typeof window !== 'undefined'
+   234→    ? (() => { try { const s = localStorage.getItem('news-portal-auth'); return s ? JSON.parse(s)?.state?.token : null } catch { return null } })()
+   235→    : null)
+   236→
+   237→  if (token) {
+   238→    headers['Authorization'] = `Bearer ${token}`
+   239→  }
+   240→
+   241→  const res = await fetch(path, {
+   242→    headers,
+   243→    ...options,
+   244→  })
+   245→
+   246→  if (!res.ok) {
+   247→    const body = await res.json().catch(() => ({}))
+   248→    throw new Error(body.message ?? body.error ?? `Request failed (${res.status})`)
+   249→  }
+   250→
+   251→  // 204 No Content
+   252→  if (res.status === 204) return undefined as T
+   253→  return res.json()
+   254→}
+   255→
+   256→// ---------------------------------------------------------------------------
+   257→// State & Actions interfaces
+   258→// ---------------------------------------------------------------------------
+   259→
+   260→interface AppState {
+   261→  // ---- Navigation ----
+   262→  currentPage: Page
+   263→  navigate: (page: Page) => void
+   264→
+   265→  // ---- UI ----
+   266→  isLoading: boolean
+   267→  sidebarOpen: boolean
+   268→  toggleSidebar: () => void
+   269→  mobileMenuOpen: boolean
+   270→  toggleMobileMenu: () => void
+   271→
+   272→  // ---- Auth ----
+   273→  user: AuthUser | null
+   274→  token: string | null
+   275→  isAuthenticated: boolean
+   276→  login: (email: string, password: string) => Promise<void>
+   277→  logout: () => void
+   278→  fetchMe: () => Promise<void>
+   279→  changePassword: (oldPassword: string, newPassword: string) => Promise<void>
+   280→
+   281→  // ---- Homepage ----
+   282→  breakingNews: Article[]
+   283→  featuredArticles: Article[]
+   284→  pinnedArticle: Article | null
+   285→  latestNews: Article[]
+   286→  trendingNews: Article[]
+   287→  popularCategories: Category[]
+   288→  advertisements: { banner: Ad[]; sidebar: Ad[]; footer: Ad[] }
+   289→  fetchHomeData: () => Promise<void>
+   290→
+   291→  // ---- Article (public) ----
+   292→  currentArticle: ArticleFull | null
+   293→  relatedArticles: Article[]
+   294→  comments: Comment[]
+   295→  fetchArticle: (slug: string) => Promise<void>
+   296→  fetchArticleById: (id: string) => Promise<void>
+   297→  fetchComments: (articleId: string) => Promise<void>
+   298→  submitComment: (
+   299→    articleId: string,
+   300→    content: string,
+   301→    authorName: string,
+   302→    authorEmail: string,
+   303→  ) => Promise<void>
+   304→
+   305→  // ---- Categories ----
+   306→  categories: Category[]
+   307→  fetchCategories: () => Promise<void>
+   308→
+   309→  // ---- Search ----
+   310→  searchResults: Article[]
+   311→  searchTotal: number
+   312→  searchQuery: string
+   313→  searchFilters: SearchFilters
+   314→  setSearchFilters: (filters: SearchFilters) => void
+   315→  search: (query: string, page?: number, limit?: number) => Promise<void>
+   316→
+   317→  // ---- Admin: Articles ----
+   318→  adminArticles: Article[]
+   319→  adminArticlesTotal: number
+   320→  adminArticlesPage: number
+   321→  adminFilters: AdminArticleFilters
+   322→  setAdminFilters: (filters: AdminArticleFilters) => void
+   323→  fetchAdminArticles: (filters?: AdminArticleFilters, page?: number) => Promise<void>
+   324→  createArticle: (data: Record<string, unknown>) => Promise<Article>
+   325→  updateArticle: (id: string, data: Record<string, unknown>) => Promise<Article>
+   326→  deleteArticle: (id: string) => Promise<void>
+   327→  publishArticle: (id: string) => Promise<Article>
+   328→
+   329→  // ---- Admin: Categories ----
+   330→  adminCategories: Category[]
+   331→  fetchAdminCategories: () => Promise<void>
+   332→  createCategory: (data: Record<string, unknown>) => Promise<Category>
+   333→  updateCategory: (id: string, data: Record<string, unknown>) => Promise<Category>
+   334→  deleteCategory: (id: string) => Promise<void>
+   335→  reorderCategories: (categories: { id: string; order: number }[]) => Promise<void>
+   336→
+   337→  // ---- Admin: Users ----
+   338→  adminUsers: User[]
+   339→  fetchAdminUsers: () => Promise<void>
+   340→  createUser: (data: Record<string, unknown>) => Promise<User>
+   341→  updateUser: (id: string, data: Record<string, unknown>) => Promise<User>
+   342→  deleteUser: (id: string) => Promise<void>
+   343→  resetUserPassword: (id: string, newPassword: string) => Promise<void>
+   344→
+   345→  // ---- Admin: Comments ----
+   346→  adminComments: Comment[]
+   347→  fetchAdminComments: (filters?: AdminCommentFilters) => Promise<void>
+   348→  updateCommentStatus: (id: string, status: 'approved' | 'rejected') => Promise<void>
+   349→  deleteComment: (id: string) => Promise<void>
+   350→
+   351→  // ---- Admin: Media ----
+   352→  mediaItems: Media[]
+   353→  fetchMedia: (search?: string, page?: number) => Promise<void>
+   354→  deleteMedia: (id: string) => Promise<void>
+   355→
+   356→  // ---- Admin: Ads ----
+   357→  ads: Advertisement[]
+   358→  fetchAds: () => Promise<void>
+   359→  createAd: (data: Record<string, unknown>) => Promise<Advertisement>
+   360→  updateAd: (id: string, data: Record<string, unknown>) => Promise<Advertisement>
+   361→  deleteAd: (id: string) => Promise<void>
+   362→
+   363→  // ---- Analytics ----
+   364→  dashboardStats: DashboardStats | null
+   365→  dailyViews: DailyViews[]
+   366→  fetchAnalytics: () => Promise<void>
+   367→
+   368→  // ---- Newsletter ----
+   369→  subscribeNewsletter: (email: string) => Promise<void>
+   370→}
+   371→
+   372→// ---------------------------------------------------------------------------
+   373→// The Store
+   374→// ---------------------------------------------------------------------------
+   375→
+   376→export const useStore = create<AppState>()(
+   377→  persist(
+   378→    (set, get) => ({
+   379→      // =====================================================================
+   380→      // Navigation
+   381→      // =====================================================================
+   382→      currentPage: { type: 'home' },
+   383→
+   384→      navigate: (page: Page) => {
+   385→        set({ currentPage: page })
+   386→        // Scroll to top on navigation
+   387→        if (typeof window !== 'undefined') {
+   388→          window.scrollTo({ top: 0, behavior: 'smooth' })
+   389→        }
+   390→      },
+   391→
+   392→      // =====================================================================
+   393→      // UI
+   394→      // =====================================================================
+   395→      isLoading: false,
+   396→      sidebarOpen: true,
+   397→      mobileMenuOpen: false,
+   398→
+   399→      toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+   400→      toggleMobileMenu: () =>
+   401→        set((s) => ({ mobileMenuOpen: !s.mobileMenuOpen })),
+   402→
+   403→      // =====================================================================
+   404→      // Auth
+   405→      // =====================================================================
+   406→      user: null,
+   407→      token: null,
+   408→      isAuthenticated: false,
+   409→
+   410→      login: async (email: string, password: string) => {
+   411→        set({ isLoading: true })
+   412→        try {
+   413→          const res = await apiFetch<{
+   414→            token: string
+   415→            user: AuthUser
+   416→          }>('/api/auth/login', {
+   417→            method: 'POST',
+   418→            body: JSON.stringify({ email, password }),
+   419→          })
+   420→          setAuthToken(res.token)
+   421→          set({
+   422→            token: res.token,
+   423→            user: res.user,
+   424→            isAuthenticated: true,
+   425→            isLoading: false,
+   426→            currentPage: { type: 'admin-dashboard' },
+   427→          })
+   428→        } catch (error) {
+   429→          set({ isLoading: false })
+   430→          throw error
+   431→        }
+   432→      },
+   433→
+   434→      logout: () => {
+   435→        setAuthToken(null)
+   436→        set({
+   437→          user: null,
+   438→          token: null,
+   439→          isAuthenticated: false,
+   440→          currentPage: { type: 'home' },
+   441→        })
+   442→      },
+   443→
+   444→      fetchMe: async () => {
+   445→        const { token } = get()
+   446→        if (!token) {
+   447→          setAuthToken(token)
+   448→          return
+   449→        }
+   450→        setAuthToken(token)
+   451→        set({ isLoading: true })
+   452→        try {
+   453→          const user = await apiFetch<AuthUser>('/api/auth/me')
+   454→          set({ user, isAuthenticated: true, isLoading: false })
+   455→        } catch {
+   456→          // Token is invalid — clear it
+   457→          set({ user: null, token: null, isAuthenticated: false, isLoading: false })
+   458→        }
+   459→      },
+   460→
+   461→      changePassword: async (oldPassword: string, newPassword: string) => {
+   462→        const { token } = get()
+   463→        set({ isLoading: true })
+   464→        try {
+   465→          await apiFetch('/api/auth/change-password', {
+   466→            method: 'POST',
+   467→            headers: { Authorization: `Bearer ${token}` },
+   468→            body: JSON.stringify({ oldPassword, newPassword }),
+   469→          })
+   470→          set({ isLoading: false })
+   471→        } catch (error) {
+   472→          set({ isLoading: false })
+   473→          throw error
+   474→        }
+   475→      },
+   476→
+   477→      // =====================================================================
+   478→      // Homepage
+   479→      // =====================================================================
+   480→      breakingNews: [],
+   481→      featuredArticles: [],
+   482→      pinnedArticle: null,
+   483→      latestNews: [],
+   484→      trendingNews: [],
+   485→      popularCategories: [],
+   486→      advertisements: { banner: [], sidebar: [], footer: [] },
+   487→
+   488→      fetchHomeData: async () => {
+   489→        set({ isLoading: true })
+   490→        try {
+   491→          const [homeData, adsData] = await Promise.all([
+   492→            apiFetch<{
+   493→              breakingNews: Article[]
+   494→              featuredArticles: Article[]
+   495→              pinnedArticle: Article | null
+   496→              latestNews: Article[]
+   497→              trendingNews: Article[]
+   498→              popularCategories: Category[]
+   499→            }>('/api/home'),
+   500→            apiFetch<{ banner: Ad[]; sidebar: Ad[]; footer: Ad[] }>(
+   501→              '/api/advertisements',
+   502→            ),
+   503→          ])
+   504→
+   505→          set({
+   506→            breakingNews: homeData.breakingNews ?? [],
+   507→            featuredArticles: homeData.featuredArticles ?? [],
+   508→            pinnedArticle: homeData.pinnedArticle ?? null,
+   509→            latestNews: homeData.latestNews ?? [],
+   510→            trendingNews: homeData.trendingNews ?? [],
+   511→            popularCategories: homeData.popularCategories ?? [],
+   512→            advertisements: {
+   513→              banner: adsData.banner ?? [],
+   514→              sidebar: adsData.sidebar ?? [],
+   515→              footer: adsData.footer ?? [],
+   516→            },
+   517→            isLoading: false,
+   518→          })
+   519→        } catch (error) {
+   520→          set({ isLoading: false })
+   521→          throw error
+   522→        }
+   523→      },
+   524→
+   525→      // =====================================================================
+   526→      // Article (public)
+   527→      // =====================================================================
+   528→      currentArticle: null,
+   529→      relatedArticles: [],
+   530→      comments: [],
+   531→
+   532→      fetchArticle: async (slug: string) => {
+   533→        set({ isLoading: true })
+   534→        try {
+   535→          const data = await apiFetch<{
+   536→            article: ArticleFull
+   537→            relatedArticles: Article[]
+   538→          }>(`/api/articles/slug/${slug}`)
+   539→
+   540→          set({
+   541→            currentArticle: data.article,
+   542→            relatedArticles: data.relatedArticles ?? [],
+   543→            comments: [],
+   544→            isLoading: false,
+   545→          })
+   546→
+   547→          // Fetch comments in background
+   548→          get().fetchComments(data.article.id)
+   549→        } catch (error) {
+   550→          set({ isLoading: false })
+   551→          throw error
+   552→        }
+   553→      },
+   554→
+   555→      fetchArticleById: async (id: string) => {
+   556→        set({ isLoading: true })
+   557→        try {
+   558→          const data = await apiFetch<ArticleFull>(
+   559→            `/api/articles/${id}`,
+   560→          )
+   561→          // Map tags from ArticleTag format to flat format
+   562→          const article = {
+   563→            ...data,
+   564→            tags: (data as unknown as { tags?: { tagId: string; tag: { id: string; name: string; slug: string } }[] }).tags?.map((at: { tag: { id: string; name: string; slug: string } }) => ({ id: at.tag.id, name: at.tag.name, slug: at.tag.slug })) ?? [],
+   565→          }
+   566→          set({ currentArticle: article, isLoading: false })
+   567→        } catch (error) {
+   568→          set({ isLoading: false })
+   569→          throw error
+   570→        }
+   571→      },
+   572→
+   573→      fetchComments: async (articleId: string) => {
+   574→        try {
+   575→          const data = await apiFetch<{ comments: Comment[] }>(
+   576→            `/api/comments?articleId=${articleId}&status=approved`,
+   577→          )
+   578→          set({ comments: data.comments ?? [] })
+   579→        } catch {
+   580→          // Non-critical — swallow
+   581→        }
+   582→      },
+   583→
+   584→      submitComment: async (
+   585→        articleId: string,
+   586→        content: string,
+   587→        authorName: string,
+   588→        authorEmail: string,
+   589→      ) => {
+   590→        try {
+   591→          await apiFetch('/api/comments/public', {
+   592→            method: 'POST',
+   593→            body: JSON.stringify({ articleId, content, authorName, authorEmail }),
+   594→          })
+   595→        } catch (error) {
+   596→          throw error
+   597→        }
+   598→      },
+   599→
+   600→      // =====================================================================
+   601→      // Categories
+   602→      // =====================================================================
+   603→      categories: [],
+   604→
+   605→      fetchCategories: async () => {
+   606→        try {
+   607→          const data = await apiFetch<{ categories: Category[] }>('/api/categories')
+   608→          set({ categories: data.categories ?? [] })
+   609→        } catch {
+   610→          // Swallow — categories will remain empty
+   611→        }
+   612→      },
+   613→
+   614→      // =====================================================================
+   615→      // Search
+   616→      // =====================================================================
+   617→      searchResults: [],
+   618→      searchTotal: 0,
+   619→      searchQuery: '',
+   620→      searchFilters: {},
+   621→
+   622→      setSearchFilters: (filters: SearchFilters) =>
+   623→        set({ searchFilters: filters }),
+   624→
+   625→      search: async (query: string, page = 1, limit = 10) => {
+   626→        set({ isLoading: true, searchQuery: query })
+   627→        try {
+   628→          const params = new URLSearchParams({
+   629→            q: query,
+   630→            page: String(page),
+   631→            limit: String(limit),
+   632→          })
+   633→
+   634→          const { searchFilters: filters } = get()
+   635→          if (filters.categoryId) params.set('categoryId', filters.categoryId)
+   636→          if (filters.dateFrom) params.set('dateFrom', filters.dateFrom)
+   637→          if (filters.dateTo) params.set('dateTo', filters.dateTo)
+   638→          if (filters.authorId) params.set('authorId', filters.authorId)
+   639→          if (filters.tagId) params.set('tagId', filters.tagId)
+   640→
+   641→          const data = await apiFetch<{
+   642→            articles: Article[]
+   643→            total: number
+   644→          }>(`/api/search?${params.toString()}`)
+   645→
+   646→          set({
+   647→            searchResults: data.articles ?? [],
+   648→            searchTotal: data.total ?? 0,
+   649→            isLoading: false,
+   650→          })
+   651→        } catch (error) {
+   652→          set({ isLoading: false })
+   653→          throw error
+   654→        }
+   655→      },
+   656→
+   657→      // =====================================================================
+   658→      // Admin: Articles
+   659→      // =====================================================================
+   660→      adminArticles: [],
+   661→      adminArticlesTotal: 0,
+   662→      adminArticlesPage: 1,
+   663→      adminFilters: {},
+   664→
+   665→      setAdminFilters: (filters: AdminArticleFilters) =>
+   666→        set({ adminFilters: filters }),
+   667→
+   668→      fetchAdminArticles: async (
+   669→        filters?: AdminArticleFilters,
+   670→        page = 1,
+   671→      ) => {
+   672→        const { token } = get()
+   673→        set({ isLoading: true })
+   674→
+   675→        try {
+   676→          const params = new URLSearchParams({ page: String(page), limit: '20' })
+   677→          const f = filters ?? get().adminFilters
+   678→
+   679→          if (f.status) params.set('status', f.status)
+   680→          if (f.categoryId) params.set('categoryId', f.categoryId)
+   681→          if (f.search) params.set('search', f.search)
+   682→
+   683→          const data = await apiFetch<{
+   684→            articles: Article[]
+   685→            total: number
+   686→          }>(`/api/articles?${params.toString()}`)
+   687→
+   688→          set({
+   689→            adminArticles: data.articles ?? [],
+   690→            adminArticlesTotal: data.total ?? 0,
+   691→            adminArticlesPage: page,
+   692→            isLoading: false,
+   693→          })
+   694→        } catch (error) {
+   695→          set({ isLoading: false })
+   696→          throw error
+   697→        }
+   698→      },
+   699→
+   700→      createArticle: async (data: Record<string, unknown>) => {
+   701→        const { token } = get()
+   702→        set({ isLoading: true })
+   703→        try {
+   704→          const res = await apiFetch<{ article: Article }>(
+   705→            '/api/articles',
+   706→            {
+   707→              method: 'POST',
+   708→              headers: { Authorization: `Bearer ${token}` },
+   709→              body: JSON.stringify(data),
+   710→            },
+   711→          )
+   712→          set((s) => ({
+   713→            adminArticles: [res.article, ...s.adminArticles],
+   714→            adminArticlesTotal: s.adminArticlesTotal + 1,
+   715→            isLoading: false,
+   716→          }))
+   717→          return res.article
+   718→        } catch (error) {
+   719→          set({ isLoading: false })
+   720→          throw error
+   721→        }
+   722→      },
+   723→
+   724→      updateArticle: async (id: string, data: Record<string, unknown>) => {
+   725→        const { token } = get()
+   726→        set({ isLoading: true })
+   727→        try {
+   728→          const res = await apiFetch<{ article: Article }>(
+   729→            `/api/articles/${id}`,
+   730→            {
+   731→              method: 'PUT',
+   732→              headers: { Authorization: `Bearer ${token}` },
+   733→              body: JSON.stringify(data),
+   734→            },
+   735→          )
+   736→          set((s) => ({
+   737→            adminArticles: s.adminArticles.map((a) =>
+   738→              a.id === id ? res.article : a,
+   739→            ),
+   740→            currentArticle:
+   741→              s.currentArticle?.id === id
+   742→                ? (res.article as unknown as ArticleFull)
+   743→                : s.currentArticle,
+   744→            isLoading: false,
+   745→          }))
+   746→          return res.article
+   747→        } catch (error) {
+   748→          set({ isLoading: false })
+   749→          throw error
+   750→        }
+   751→      },
+   752→
+   753→      deleteArticle: async (id: string) => {
+   754→        const { token } = get()
+   755→        set({ isLoading: true })
+   756→        try {
+   757→          await apiFetch(`/api/articles/${id}`, {
+   758→            method: 'DELETE',
+   759→            headers: { Authorization: `Bearer ${token}` },
+   760→          })
+   761→          set((s) => ({
+   762→            adminArticles: s.adminArticles.filter((a) => a.id !== id),
+   763→            adminArticlesTotal: s.adminArticlesTotal - 1,
+   764→            isLoading: false,
+   765→          }))
+   766→        } catch (error) {
+   767→          set({ isLoading: false })
+   768→          throw error
+   769→        }
+   770→      },
+   771→
+   772→      publishArticle: async (id: string) => {
+   773→        const { token } = get()
+   774→        set({ isLoading: true })
+   775→        try {
+   776→          const res = await apiFetch<{ article: Article }>(
+   777→            `/api/articles/${id}/publish`,
+   778→            {
+   779→              method: 'POST',
+   780→              headers: { Authorization: `Bearer ${token}` },
+   781→            },
+   782→          )
+   783→          set((s) => ({
+   784→            adminArticles: s.adminArticles.map((a) =>
+   785→              a.id === id ? res.article : a,
+   786→            ),
+   787→            currentArticle:
+   788→              s.currentArticle?.id === id
+   789→                ? (res.article as unknown as ArticleFull)
+   790→                : s.currentArticle,
+   791→            isLoading: false,
+   792→          }))
+   793→          return res.article
+   794→        } catch (error) {
+   795→          set({ isLoading: false })
+   796→          throw error
+   797→        }
+   798→      },
+   799→
+   800→      // =====================================================================
+   801→      // Admin: Categories
+   802→      // =====================================================================
+   803→      adminCategories: [],
+   804→
+   805→      fetchAdminCategories: async () => {
+   806→        const { token } = get()
+   807→        try {
+   808→          const data = await apiFetch<{ categories: Category[] }>(
+   809→            '/api/categories',
+   810→            { headers: { Authorization: `Bearer ${token}` } },
+   811→          )
+   812→          set({ adminCategories: data.categories ?? [] })
+   813→        } catch {
+   814→          // Swallow
+   815→        }
+   816→      },
+   817→
+   818→      createCategory: async (data: Record<string, unknown>) => {
+   819→        const { token } = get()
+   820→        set({ isLoading: true })
+   821→        try {
+   822→          const res = await apiFetch<{ category: Category }>(
+   823→            '/api/categories',
+   824→            {
+   825→              method: 'POST',
+   826→              headers: { Authorization: `Bearer ${token}` },
+   827→              body: JSON.stringify(data),
+   828→            },
+   829→          )
+   830→          set((s) => ({
+   831→            adminCategories: [...s.adminCategories, res.category],
+   832→            categories: [...s.categories, res.category],
+   833→            isLoading: false,
+   834→          }))
+   835→          return res.category
+   836→        } catch (error) {
+   837→          set({ isLoading: false })
+   838→          throw error
+   839→        }
+   840→      },
+   841→
+   842→      updateCategory: async (id: string, data: Record<string, unknown>) => {
+   843→        const { token } = get()
+   844→        set({ isLoading: true })
+   845→        try {
+   846→          const res = await apiFetch<{ category: Category }>(
+   847→            `/api/categories/${id}`,
+   848→            {
+   849→              method: 'PUT',
+   850→              headers: { Authorization: `Bearer ${token}` },
+   851→              body: JSON.stringify(data),
+   852→            },
+   853→          )
+   854→          const updated = res.category
+   855→          set((s) => ({
+   856→            adminCategories: s.adminCategories.map((c) =>
+   857→              c.id === id ? updated : c,
+   858→            ),
+   859→            categories: s.categories.map((c) =>
+   860→              c.id === id ? updated : c,
+   861→            ),
+   862→            isLoading: false,
+   863→          }))
+   864→          return updated
+   865→        } catch (error) {
+   866→          set({ isLoading: false })
+   867→          throw error
+   868→        }
+   869→      },
+   870→
+   871→      deleteCategory: async (id: string) => {
+   872→        const { token } = get()
+   873→        set({ isLoading: true })
+   874→        try {
+   875→          await apiFetch(`/api/categories/${id}`, {
+   876→            method: 'DELETE',
+   877→            headers: { Authorization: `Bearer ${token}` },
+   878→          })
+   879→          set((s) => ({
+   880→            adminCategories: s.adminCategories.filter((c) => c.id !== id),
+   881→            categories: s.categories.filter((c) => c.id !== id),
+   882→            isLoading: false,
+   883→          }))
+   884→        } catch (error) {
+   885→          set({ isLoading: false })
+   886→          throw error
+   887→        }
+   888→      },
+   889→
+   890→      reorderCategories: async (
+   891→        categories: { id: string; order: number }[],
+   892→      ) => {
+   893→        const { token } = get()
+   894→        set({ isLoading: true })
+   895→        try {
+   896→          await apiFetch('/api/categories/reorder', {
+   897→            method: 'POST',
+   898→            headers: { Authorization: `Bearer ${token}` },
+   899→            body: JSON.stringify({ categories }),
+   900→          })
+   901→          // Optimistically update local order
+   902→          set((s) => ({
+   903→            adminCategories: s.adminCategories
+   904→              .map((c) => {
+   905→                const match = categories.find((rc) => rc.id === c.id)
+   906→                return match ? { ...c, order: match.order } : c
+   907→              })
+   908→              .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
+   909→            isLoading: false,
+   910→          }))
+   911→        } catch (error) {
+   912→          set({ isLoading: false })
+   913→          throw error
+   914→        }
+   915→      },
+   916→
+   917→      // =====================================================================
+   918→      // Admin: Users
+   919→      // =====================================================================
+   920→      adminUsers: [],
+   921→
+   922→      fetchAdminUsers: async () => {
+   923→        const { token } = get()
+   924→        try {
+   925→          const data = await apiFetch<{ users: User[] }>(
+   926→            '/api/users',
+   927→            { headers: { Authorization: `Bearer ${token}` } },
+   928→          )
+   929→          set({ adminUsers: data.users ?? [] })
+   930→        } catch {
+   931→          // Swallow
+   932→        }
+   933→      },
+   934→
+   935→      createUser: async (data: Record<string, unknown>) => {
+   936→        const { token } = get()
+   937→        set({ isLoading: true })
+   938→        try {
+   939→          const res = await apiFetch<{ user: User }>(
+   940→            '/api/users',
+   941→            {
+   942→              method: 'POST',
+   943→              headers: { Authorization: `Bearer ${token}` },
+   944→              body: JSON.stringify(data),
+   945→            },
+   946→          )
+   947→          set((s) => ({
+   948→            adminUsers: [...s.adminUsers, res.user],
+   949→            isLoading: false,
+   950→          }))
+   951→          return res.user
+   952→        } catch (error) {
+   953→          set({ isLoading: false })
+   954→          throw error
+   955→        }
+   956→      },
+   957→
+   958→      updateUser: async (id: string, data: Record<string, unknown>) => {
+   959→        const { token } = get()
+   960→        set({ isLoading: true })
+   961→        try {
+   962→          const res = await apiFetch<{ user: User }>(
+   963→            `/api/users/${id}`,
+   964→            {
+   965→              method: 'PUT',
+   966→              headers: { Authorization: `Bearer ${token}` },
+   967→              body: JSON.stringify(data),
+   968→            },
+   969→          )
+   970→          set((s) => ({
+   971→            adminUsers: s.adminUsers.map((u) =>
+   972→              u.id === id ? res.user : u,
+   973→            ),
+   974→            isLoading: false,
+   975→          }))
+   976→          return res.user
+   977→        } catch (error) {
+   978→          set({ isLoading: false })
+   979→          throw error
+   980→        }
+   981→      },
+   982→
+   983→      deleteUser: async (id: string) => {
+   984→        const { token } = get()
+   985→        set({ isLoading: true })
+   986→        try {
+   987→          await apiFetch(`/api/users/${id}`, {
+   988→            method: 'DELETE',
+   989→            headers: { Authorization: `Bearer ${token}` },
+   990→          })
+   991→          set((s) => ({
+   992→            adminUsers: s.adminUsers.filter((u) => u.id !== id),
+   993→            isLoading: false,
+   994→          }))
+   995→        } catch (error) {
+   996→          set({ isLoading: false })
+   997→          throw error
+   998→        }
+   999→      },
+  1000→
+  1001→      resetUserPassword: async (id: string, newPassword: string) => {
+  1002→        const { token } = get()
+  1003→        set({ isLoading: true })
+  1004→        try {
+  1005→          await apiFetch(`/api/users/${id}/reset-password`, {
+  1006→            method: 'POST',
+  1007→            headers: { Authorization: `Bearer ${token}` },
+  1008→            body: JSON.stringify({ newPassword }),
+  1009→          })
+  1010→          set({ isLoading: false })
+  1011→        } catch (error) {
+  1012→          set({ isLoading: false })
+  1013→          throw error
+  1014→        }
+  1015→      },
+  1016→
+  1017→      // =====================================================================
+  1018→      // Admin: Comments
+  1019→      // =====================================================================
+  1020→      adminComments: [],
+  1021→
+  1022→      fetchAdminComments: async (filters?: AdminCommentFilters) => {
+  1023→        const { token } = get()
+  1024→        set({ isLoading: true })
+  1025→        try {
+  1026→          const params = new URLSearchParams()
+  1027→          if (filters?.status) params.set('status', filters.status)
+  1028→          if (filters?.articleId) params.set('articleId', filters.articleId)
+  1029→          if (filters?.search) params.set('search', filters.search)
+  1030→
+  1031→          const qs = params.toString()
+  1032→          const data = await apiFetch<{ comments: Comment[] }>(
+  1033→            `/api/comments${qs ? `?${qs}` : ''}`,
+  1034→          )
+  1035→          set({ adminComments: data.comments ?? [], isLoading: false })
+  1036→        } catch (error) {
+  1037→          set({ isLoading: false })
+  1038→          throw error
+  1039→        }
+  1040→      },
+  1041→
+  1042→      updateCommentStatus: async (
+  1043→        id: string,
+  1044→        status: 'approved' | 'rejected',
+  1045→      ) => {
+  1046→        const { token } = get()
+  1047→        set({ isLoading: true })
+  1048→        try {
+  1049→          await apiFetch(`/api/comments/${id}`, {
+  1050→            method: 'PUT',
+  1051→            body: JSON.stringify({ status }),
+  1052→          })
+  1053→          set((s) => ({
+  1054→            adminComments: s.adminComments.map((c) =>
+  1055→              c.id === id ? { ...c, status } : c,
+  1056→            ),
+  1057→            comments: s.comments.map((c) =>
+  1058→              c.id === id ? { ...c, status } : c,
+  1059→            ),
+  1060→            isLoading: false,
+  1061→          }))
+  1062→        } catch (error) {
+  1063→          set({ isLoading: false })
+  1064→          throw error
+  1065→        }
+  1066→      },
+  1067→
+  1068→      deleteComment: async (id: string) => {
+  1069→        const { token } = get()
+  1070→        set({ isLoading: true })
+  1071→        try {
+  1072→          await apiFetch(`/api/comments/${id}`, {
+  1073→            method: 'DELETE',
+  1074→            headers: { Authorization: `Bearer ${token}` },
+  1075→          })
+  1076→          set((s) => ({
+  1077→            adminComments: s.adminComments.filter((c) => c.id !== id),
+  1078→            comments: s.comments.filter((c) => c.id !== id),
+  1079→            isLoading: false,
+  1080→          }))
+  1081→        } catch (error) {
+  1082→          set({ isLoading: false })
+  1083→          throw error
+  1084→        }
+  1085→      },
+  1086→
+  1087→      // =====================================================================
+  1088→      // Admin: Media
+  1089→      // =====================================================================
+  1090→      mediaItems: [],
+  1091→
+  1092→      fetchMedia: async (search?: string, page = 1) => {
+  1093→        const { token } = get()
+  1094→        set({ isLoading: true })
+  1095→        try {
+  1096→          const params = new URLSearchParams({ page: String(page), limit: '30' })
+  1097→          if (search) params.set('search', search)
+  1098→
+  1099→          const data = await apiFetch<{ media: Media[] }>(
+  1100→            `/api/media?${params.toString()}`,
+  1101→            { headers: { Authorization: `Bearer ${token}` } },
+  1102→          )
+  1103→          set({ mediaItems: data.media ?? [], isLoading: false })
+  1104→        } catch (error) {
+  1105→          set({ isLoading: false })
+  1106→          throw error
+  1107→        }
+  1108→      },
+  1109→
+  1110→      deleteMedia: async (id: string) => {
+  1111→        const { token } = get()
+  1112→        set({ isLoading: true })
+  1113→        try {
+  1114→          await apiFetch(`/api/media/${id}`, {
+  1115→            method: 'DELETE',
+  1116→            headers: { Authorization: `Bearer ${token}` },
+  1117→          })
+  1118→          set((s) => ({
+  1119→            mediaItems: s.mediaItems.filter((m) => m.id !== id),
+  1120→            isLoading: false,
+  1121→          }))
+  1122→        } catch (error) {
+  1123→          set({ isLoading: false })
+  1124→          throw error
+  1125→        }
+  1126→      },
+  1127→
+  1128→      // =====================================================================
+  1129→      // Admin: Ads
+  1130→      // =====================================================================
+  1131→      ads: [],
+  1132→
+  1133→      fetchAds: async () => {
+  1134→        const { token } = get()
+  1135→        try {
+  1136→          const data = await apiFetch<{ advertisements: Advertisement[] }>(
+  1137→            '/api/ads',
+  1138→            { headers: { Authorization: `Bearer ${token}` } },
+  1139→          )
+  1140→          set({ ads: data.advertisements ?? [] })
+  1141→        } catch {
+  1142→          // Swallow
+  1143→        }
+  1144→      },
+  1145→
+  1146→      createAd: async (data: Record<string, unknown>) => {
+  1147→        const { token } = get()
+  1148→        set({ isLoading: true })
+  1149→        try {
+  1150→          const res = await apiFetch<{ advertisement: Advertisement }>(
+  1151→            '/api/ads',
+  1152→            {
+  1153→              method: 'POST',
+  1154→              headers: { Authorization: `Bearer ${token}` },
+  1155→              body: JSON.stringify(data),
+  1156→            },
+  1157→          )
+  1158→          set((s) => ({
+  1159→            ads: [...s.ads, res.advertisement],
+  1160→            isLoading: false,
+  1161→          }))
+  1162→          return res.advertisement
+  1163→        } catch (error) {
+  1164→          set({ isLoading: false })
+  1165→          throw error
+  1166→        }
+  1167→      },
+  1168→
+  1169→      updateAd: async (id: string, data: Record<string, unknown>) => {
+  1170→        const { token } = get()
+  1171→        set({ isLoading: true })
+  1172→        try {
+  1173→          const res = await apiFetch<{ advertisement: Advertisement }>(
+  1174→            `/api/ads/${id}`,
+  1175→            {
+  1176→              method: 'PUT',
+  1177→              headers: { Authorization: `Bearer ${token}` },
+  1178→              body: JSON.stringify(data),
+  1179→            },
+  1180→          )
+  1181→          set((s) => ({
+  1182→            ads: s.ads.map((a) =>
+  1183→              a.id === id ? res.advertisement : a,
+  1184→            ),
+  1185→            isLoading: false,
+  1186→          }))
+  1187→          return res.advertisement
+  1188→        } catch (error) {
+  1189→          set({ isLoading: false })
+  1190→          throw error
+  1191→        }
+  1192→      },
+  1193→
+  1194→      deleteAd: async (id: string) => {
+  1195→        const { token } = get()
+  1196→        set({ isLoading: true })
+  1197→        try {
+  1198→          await apiFetch(`/api/ads/${id}`, {
+  1199→            method: 'DELETE',
+  1200→            headers: { Authorization: `Bearer ${token}` },
+  1201→          })
+  1202→          set((s) => ({
+  1203→            ads: s.ads.filter((a) => a.id !== id),
+  1204→            isLoading: false,
+  1205→          }))
+  1206→        } catch (error) {
+  1207→          set({ isLoading: false })
+  1208→          throw error
+  1209→        }
+  1210→      },
+  1211→
+  1212→      // =====================================================================
+  1213→      // Analytics
+  1214→      // =====================================================================
+  1215→      dashboardStats: null,
+  1216→      dailyViews: [],
+  1217→
+  1218→      fetchAnalytics: async () => {
+  1219→        const { token } = get()
+  1220→        set({ isLoading: true })
+  1221→        try {
+  1222→          const data = await apiFetch<{
+  1223→            stats: DashboardStats
+  1224→            dailyViews: DailyViews[]
+  1225→          }>('/api/analytics/overview')
+  1226→          set({
+  1227→            dashboardStats: data.stats,
+  1228→            dailyViews: data.dailyViews ?? [],
+  1229→            isLoading: false,
+  1230→          })
+  1231→        } catch (error) {
+  1232→          set({ isLoading: false })
+  1233→          throw error
+  1234→        }
+  1235→      },
+  1236→
+  1237→      // =====================================================================
+  1238→      // Newsletter
+  1239→      // =====================================================================
+  1240→      subscribeNewsletter: async (email: string) => {
+  1241→        set({ isLoading: true })
+  1242→        try {
+  1243→          await apiFetch('/api/newsletter', {
+  1244→            method: 'POST',
+  1245→            body: JSON.stringify({ email }),
+  1246→          })
+  1247→          set({ isLoading: false })
+  1248→        } catch (error) {
+  1249→          set({ isLoading: false })
+  1250→          throw error
+  1251→        }
+  1252→      },
+  1253→    }),
+  1254→    {
+  1255→      name: 'news-portal-auth',
+  1256→      storage: createJSONStorage(() =>
+  1257→        typeof window !== 'undefined'
+  1258→          ? localStorage
+  1259→          : {
+  1260→              getItem: () => null,
+  1261→              setItem: () => {},
+  1262→              removeItem: () => {},
+  1263→            },
+  1264→      ),
+  1265→      // Only persist the token — user is fetched on app load via fetchMe()
+  1266→      partialize: (state) => ({ token: state.token } as Partial<AppState>),
+  1267→    },
+  1268→  ),
+  1269→)

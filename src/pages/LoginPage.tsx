@@ -5,7 +5,7 @@ import { useStore } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
-import { Newspaper, Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react'
+import { Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function LoginPage() {
@@ -48,11 +48,17 @@ export default function LoginPage() {
         <div className="rounded-xl border bg-card p-8 shadow-sm">
           {/* Logo */}
           <div className="mb-6 flex flex-col items-center">
-            <div className="mb-3 flex items-center gap-2 text-primary">
-              <Newspaper className="h-8 w-8" />
-              <span className="text-2xl font-bold">GhanaNewsHub</span>
+            <div className="mb-3 flex items-center gap-3">
+              <img
+                src="/logo.jpg"
+                alt="GhanaNewsHub"
+                className="logo-img-lg rounded"
+              />
             </div>
-            <p className="text-sm text-muted-foreground text-center">
+            <h2 className="text-2xl font-bold" style={{ color: '#003050' }}>
+              GhanaNewsHub
+            </h2>
+            <p className="text-sm text-muted-foreground text-center mt-1">
               Sign in to the admin dashboard
             </p>
           </div>
@@ -91,7 +97,7 @@ export default function LoginPage() {
                 <Input
                   id="login-password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
@@ -121,7 +127,12 @@ export default function LoginPage() {
             )}
 
             {/* Submit */}
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="w-full text-white"
+              style={{ backgroundColor: '#003050' }}
+              disabled={isLoading}
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

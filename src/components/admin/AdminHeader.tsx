@@ -56,7 +56,7 @@ export default function AdminHeader() {
       </Button>
 
       {/* Page title */}
-      <h1 className="hidden text-lg font-semibold sm:block">{pageTitle}</h1>
+      <h1 className="hidden text-lg font-semibold sm:block" style={{ color: '#003050' }}>{pageTitle}</h1>
 
       {/* Search */}
       <div className="relative ml-auto max-w-sm flex-1 sm:max-w-xs">
@@ -72,7 +72,7 @@ export default function AdminHeader() {
       {/* Notification bell */}
       <Button variant="ghost" size="icon" className="relative shrink-0">
         <Bell className="size-5" />
-        <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-primary" />
+        <span className="absolute right-1.5 top-1.5 size-2 rounded-full" style={{ backgroundColor: '#f08010' }} />
       </Button>
 
       {/* User dropdown */}
@@ -84,7 +84,7 @@ export default function AdminHeader() {
           >
             <Avatar className="size-8">
               <AvatarImage src={user?.avatar} alt={user?.name} />
-              <AvatarFallback className="bg-primary/10 text-primary text-xs">
+              <AvatarFallback className="text-xs" style={{ backgroundColor: '#003050', color: '#fff' }}>
                 {user?.name
                   ?.split(' ')
                   .map((n) => n[0])

@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Pin, TrendingUp, Mail, Send, Newspaper } from 'lucide-react'
+import { Pin, TrendingUp, Mail, Send } from 'lucide-react'
 import { toast } from 'sonner'
 
 const FEATURED_CATEGORY_SLUGS = ['politics', 'business', 'sports', 'entertainment']
@@ -277,31 +277,31 @@ export default function HomePage() {
       })}
 
       {/* Newsletter Section */}
-      <section className="rounded-lg bg-primary p-8 text-primary-foreground">
+      <section className="rounded-lg p-8 text-white" style={{ backgroundColor: '#003050' }}>
         <div className="mx-auto max-w-xl text-center">
-          <Newspaper className="mx-auto mb-3 h-10 w-10 opacity-80" />
+          <img src="/logo.jpg" alt="" className="mx-auto mb-3 h-10 w-10 rounded opacity-80 object-cover" />
           <h2 className="text-2xl font-bold mb-2">Stay Informed</h2>
-          <p className="mb-6 text-sm opacity-90">
+          <p className="mb-6 text-sm text-white/80">
             Subscribe to our daily newsletter and never miss the most important
             stories from Ghana and around the world.
           </p>
           <div className="flex gap-2 max-w-md mx-auto">
             <div className="relative flex-1">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-70" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
               <Input
                 type="email"
                 placeholder="your@email.com"
                 value={nlEmail}
                 onChange={(e) => setNlEmail(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleNewsletter()}
-                className="pl-9 bg-white/10 border-white/20 placeholder:text-white/50 text-foreground focus-visible:ring-white/30"
+                className="pl-9 bg-white/10 border-white/20 placeholder:text-white/50 text-white focus-visible:ring-white/30"
               />
             </div>
             <Button
               onClick={handleNewsletter}
               disabled={nlLoading}
-              variant="secondary"
-              className="shrink-0"
+              className="shrink-0 text-white"
+              style={{ backgroundColor: '#f08010' }}
             >
               <Send className="h-4 w-4 mr-2" />
               Subscribe

@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/sheet'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
-  Newspaper,
   Search,
   Menu,
   Moon,
@@ -34,10 +33,16 @@ export default function Navbar() {
         {/* Logo */}
         <button
           onClick={() => navigate({ type: 'home' })}
-          className="flex items-center gap-2 font-bold text-lg text-primary"
+          className="flex items-center gap-2"
         >
-          <Newspaper className="h-6 w-6" />
-          <span className="hidden sm:inline">GhanaNewsHub</span>
+          <img
+            src="/logo.jpg"
+            alt="GhanaNewsHub"
+            className="logo-img rounded"
+          />
+          <span className="hidden sm:inline text-lg font-bold" style={{ color: '#003050' }}>
+            GhanaNewsHub
+          </span>
         </button>
 
         {/* Desktop category nav */}
@@ -91,7 +96,7 @@ export default function Navbar() {
             >
               <Avatar className="h-6 w-6">
                 {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
-                <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                <AvatarFallback className="text-xs" style={{ backgroundColor: '#003050', color: '#fff' }}>
                   {user.name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -118,9 +123,13 @@ export default function Navbar() {
             </SheetTrigger>
             <SheetContent side="left" className="w-72 p-0">
               <SheetHeader className="border-b px-4 py-3">
-                <SheetTitle className="flex items-center gap-2 text-primary">
-                  <Newspaper className="h-5 w-5" />
-                  GhanaNewsHub
+                <SheetTitle className="flex items-center gap-2">
+                  <img
+                    src="/logo.jpg"
+                    alt="GhanaNewsHub"
+                    className="logo-img-sm rounded"
+                  />
+                  <span style={{ color: '#003050' }}>GhanaNewsHub</span>
                 </SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col p-4 gap-1">
@@ -170,7 +179,7 @@ export default function Navbar() {
                       {user.avatar && (
                         <AvatarImage src={user.avatar} alt={user.name} />
                       )}
-                      <AvatarFallback className="text-[10px] bg-primary text-primary-foreground">
+                      <AvatarFallback className="text-[10px]" style={{ backgroundColor: '#003050', color: '#fff' }}>
                         {user.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>

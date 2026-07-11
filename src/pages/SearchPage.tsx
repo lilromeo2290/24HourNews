@@ -70,7 +70,6 @@ export default function SearchPage() {
   // Set initial category filter and run initial search
   useEffect(() => {
     if (initialCategoryId) {
-      setSearchFilters({ ...searchFilters, categoryId: initialCategoryId })
       setCategoryId(initialCategoryId)
     }
     if (initialQuery) {

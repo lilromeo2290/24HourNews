@@ -15,7 +15,6 @@ import {
   Settings,
   LogOut,
   ChevronLeft,
-  Newspaper,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -54,21 +53,34 @@ export default function AdminSidebar() {
 
       <aside
         className={cn(
-          'fixed left-0 top-0 z-50 flex h-full flex-col border-r bg-card transition-all duration-300',
+          'fixed left-0 top-0 z-50 flex h-full flex-col transition-all duration-300',
           sidebarOpen ? 'w-64' : 'w-0 lg:w-16',
           'overflow-hidden'
         )}
+        style={{ backgroundColor: '#003050' }}
       >
         {/* Logo */}
-        <div className="flex h-16 items-center gap-2 border-b px-4">
-          <Newspaper className="size-7 shrink-0 text-primary" />
-          {sidebarOpen && (
-            <span className="text-lg font-bold tracking-tight">GNH Admin</span>
+        <div className="flex h-16 items-center gap-2 border-b border-white/10 px-4">
+          {sidebarOpen ? (
+            <div className="flex items-center gap-2">
+              <img
+                src="/logo.jpg"
+                alt="GNH Admin"
+                className="h-8 w-8 rounded object-cover"
+              />
+              <span className="text-lg font-bold text-white tracking-tight">GNH Admin</span>
+            </div>
+          ) : (
+            <img
+              src="/logo.jpg"
+              alt="GNH"
+              className="h-8 w-8 rounded object-cover"
+            />
           )}
           <Button
             variant="ghost"
             size="icon"
-            className="ml-auto hidden lg:flex"
+            className="ml-auto hidden lg:flex text-white/60 hover:text-white hover:bg-white/10"
             onClick={toggleSidebar}
           >
             <ChevronLeft
@@ -81,7 +93,7 @@ export default function AdminSidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 custom-scrollbar">
           <ul className="flex flex-col gap-1">
             {navItems.map((item) => {
               const Icon = item.icon
@@ -99,8 +111,8 @@ export default function AdminSidebar() {
                     className={cn(
                       'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                       active
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                        ? 'bg-white/15 text-white'
+                        : 'text-white/60 hover:bg-white/10 hover:text-white'
                     )}
                   >
                     <Icon className="size-5 shrink-0" />
@@ -112,14 +124,14 @@ export default function AdminSidebar() {
           </ul>
         </nav>
 
-        <Separator />
+        <Separator className="bg-white/10" />
 
         {/* User info */}
         {user && sidebarOpen && (
           <div className="flex items-center gap-3 px-4 py-3">
             <Avatar className="size-9">
               <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback className="bg-primary/10 text-primary text-xs">
+              <AvatarFallback className="text-xs" style={{ backgroundColor: '#f08010', color: '#fff' }}>
                 {user.name
                   .split(' ')
                   .map((n) => n[0])
@@ -128,15 +140,15 @@ export default function AdminSidebar() {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 truncate">
-              <p className="truncate text-sm font-medium">{user.name}</p>
-              <p className="truncate text-xs text-muted-foreground capitalize">
+              <p className="truncate text-sm font-medium text-white">{user.name}</p>
+              <p className="truncate text-xs text-white/50 capitalize">
                 {user.role}
               </p>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
+              className="size-8 shrink-0 text-white/50 hover:text-red-400 hover:bg-white/10"
               onClick={logout}
               title="Logout"
             >
@@ -150,7 +162,7 @@ export default function AdminSidebar() {
           <div className="flex justify-center py-3">
             <Avatar className="size-9">
               <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback className="bg-primary/10 text-primary text-xs">
+              <AvatarFallback className="text-xs" style={{ backgroundColor: '#f08010', color: '#fff' }}>
                 {user.name
                   .split(' ')
                   .map((n) => n[0])
