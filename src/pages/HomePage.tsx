@@ -8,8 +8,7 @@ import AdBanner from '@/components/public/AdBanner'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Pin, TrendingUp, Mail, Send } from 'lucide-react'
+import { TrendingUp, Mail, Send } from 'lucide-react'
 import { toast } from 'sonner'
 
 const FEATURED_CATEGORY_SLUGS = ['politics', 'business', 'sports', 'entertainment']
@@ -154,20 +153,6 @@ export default function HomePage() {
 
       {/* Banner Ad */}
       <AdBanner position="banner" />
-
-      {/* Pinned Article */}
-      {pinnedArticle && (
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <Pin className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-bold">Pinned Story</h2>
-            <Badge variant="destructive" className="text-[10px]">
-              PINNED
-            </Badge>
-          </div>
-          <NewsCard article={pinnedArticle} variant="horizontal" />
-        </section>
-      )}
 
       {/* Latest News + Sidebar */}
       <section>
