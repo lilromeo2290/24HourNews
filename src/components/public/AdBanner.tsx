@@ -25,7 +25,7 @@ export default function AdBanner({ position }: AdBannerProps) {
     <img
       src={ad.imageUrl}
       alt={ad.title}
-      className={`h-auto w-full object-contain rounded-lg ${position === 'sidebar' ? 'max-h-[250px]' : position === 'trending' ? 'max-h-[250px]' : position === 'banner' ? 'max-h-[90px]' : 'max-h-[120px]'}`}
+      className={`h-auto w-full rounded-lg ${position === 'sidebar' ? 'aspect-[3/4] object-cover' : position === 'trending' ? 'aspect-[3/4] object-cover' : position === 'banner' ? 'aspect-[728/90] object-cover' : 'max-h-[120px] object-cover'}`}
     />
   )
 
