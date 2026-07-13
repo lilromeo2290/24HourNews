@@ -28,12 +28,32 @@ error() {
     exit 1
 }
 
+# Detect OS
+if [ -f /etc/centos-release ] || [ -f /etc/redhat-release ] || [ -f /etc/rocky-release ]; then
+    PKG_MGR="yum"
+    echo "Detected CentOS/RHEL system"
+elif [ -f /etc/debian_version ] || [ -f /etc/ubuntu-release ]; then
+    PKG_MGR="apt"
+    echo "Detected Debian/Ubuntu system"
+else
+    echo "Unknown OS, trying yum..."
+    PKG_MGR="yum"
+fi
+
 # -------------------------------------------------------
 # 1. Install system dependencies
 # -------------------------------------------------------
 step "Installing system dependencies"
-sudo apt-get update -qq
-sudo apt-get install -y -qq curl git nginx sqlite3 > /dev/null 2>&1
+if [ "$PKG_MGR" = "yum" ]; then
+    yum install -y curl git sqlite make gcc-c++ > /dev/null 2>&1
+    # Nginx may already be installed by Webuzo
+    if ! command -v nginx &> /dev/null; then
+        yum install -y nginx > /dev/null 2>&1 || warn "Nginx not installed via yum — Webuzo may handle it"
+    fi
+else
+    apt-get update -qq
+    apt-get install -y -qq curl git nginx sqlite3 build-essential > /dev/null 2>&1
+fi
 
 # -------------------------------------------------------
 # 2. Install Node.js 22.x (LTS)
@@ -41,8 +61,13 @@ sudo apt-get install -y -qq curl git nginx sqlite3 > /dev/null 2>&1
 step "Checking Node.js"
 if ! command -v node &> /dev/null || [ "$(node -v | cut -d. -f1)" -lt 20 ]; then
     echo "Installing Node.js 22.x..."
-    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-    sudo apt-get install -y nodejs
+    if [ "$PKG_MGR" = "yum" ]; then
+        curl -fsSL https://rpm.nodesource.com/setup_22.x | bash -
+        yum install -y nodejs
+    else
+        curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+        apt-get install -y nodejs
+    fi
 fi
 echo "Node.js: $(node -v)"
 echo "npm: $(npm -v)"
@@ -51,7 +76,7 @@ echo "npm: $(npm -v)"
 # 3. Install PM2 globally
 # -------------------------------------------------------
 step "Installing PM2"
-sudo npm install -g pm2
+npm install -g pm2
 pm2 startup systemd -u root --hp /root 2>/dev/null || true
 
 # -------------------------------------------------------
@@ -73,7 +98,7 @@ fi
 # 5. Install dependencies
 # -------------------------------------------------------
 step "Installing npm packages"
-npm install --production=false
+npm install
 
 # -------------------------------------------------------
 # 6. Set up environment
@@ -81,7 +106,7 @@ npm install --production=false
 step "Configuring environment"
 if [ ! -f "$APP_DIR/.env" ]; then
     cp "$APP_DIR/.env.example" "$APP_DIR/.env"
-    echo "Created .env from .env.example — please review it."
+    echo "Created .env from .env.example"
 else
     echo ".env already exists, keeping it."
 fi
@@ -106,7 +131,7 @@ fi
 # -------------------------------------------------------
 # 8. Build the Next.js app
 # -------------------------------------------------------
-step "Building Next.js (standalone)"
+step "Building Next.js (standalone) — this may take a few minutes..."
 npm run build
 
 # Verify standalone output
@@ -128,17 +153,33 @@ pm2 delete 24hournews 2>/dev/null || true
 pm2 start "$APP_DIR/ecosystem.config.js"
 pm2 save
 
+# -------------------------------------------------------
+# 11. Configure firewall (if active)
+# -------------------------------------------------------
+step "Checking firewall"
+if command -v firewall-cmd &> /dev/null; then
+    if firewall-cmd --state >/dev/null 2>&1; then
+        firewall-cmd --permanent --add-port=3000/tcp 2>/dev/null || true
+        firewall-cmd --reload 2>/dev/null || true
+        echo "Firewall: port 3000 opened"
+    fi
+fi
+
 echo -e "\n${GREEN}=========================================${NC}"
 echo -e "${GREEN}  Deploy complete!${NC}"
 echo -e "${GREEN}=========================================${NC}"
 echo ""
 echo "App is running on port 3000"
+echo ""
 echo "PM2 commands:"
 echo "  pm2 logs 24hournews    - View logs"
 echo "  pm2 restart 24hournews - Restart app"
 echo "  pm2 stop 24hournews    - Stop app"
 echo ""
-echo "Next step: Configure Nginx (see nginx.conf.example)"
-echo "  1. Copy nginx.conf.example to /etc/nginx/conf.d/24hournews.conf"
-echo "  2. Replace 'yourdomain.com' with your actual domain"
-echo "  3. Run: sudo nginx -t && sudo systemctl reload nginx"
+echo "Test it: curl http://localhost:3000"
+echo ""
+echo "Next: Configure Nginx reverse proxy"
+echo "  1. Copy nginx.conf.example to Webuzo Nginx config"
+echo "  2. Or add the location block to your domain's Nginx vhost"
+echo "  3. Replace 'yourdomain.com' with your actual domain"
+echo "  4. Test: nginx -t && systemctl reload nginx"
