@@ -153,10 +153,24 @@ async function main() {
     console.log('  Updated article: Yaa-Naa Abukari');
   }
 
-  // 7. Add Hanan EOCO article
+  // 7. Ensure Politics category exists
+  let politics = await db.category.findFirst({ where: { slug: 'politics' } });
+  if (!politics) {
+    politics = await db.category.create({
+      data: {
+        name: 'Politics',
+        slug: 'politics',
+        description: 'Political news, governance, and policy updates from Ghana and across Africa.',
+        color: '#003050',
+        order: 1,
+      }
+    });
+    console.log('  Created category: Politics');
+  }
+
+  // 8. Add Hanan EOCO article
   const hananSlug = 'return-hanans-belongings-or-face-legal-action-lawyers-warn-eoco';
   let hananArticle = await db.article.findFirst({ where: { slug: hananSlug } });
-  const politics = await db.category.findFirst({ where: { slug: 'politics' } });
   if (!hananArticle) {
     await db.article.create({
       data: {
