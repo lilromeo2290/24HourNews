@@ -118,7 +118,7 @@ export default function HomePage() {
             <aside className="rounded-lg border bg-card p-4">
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp className="h-5 w-5 text-primary" />
-                <h3 className="font-bold">Trending</h3>
+                <h3 className="font-bold">General News</h3>
               </div>
               <div className="divide-y">
                 {trendingNews.slice(0, 6).map((article, i) => (
