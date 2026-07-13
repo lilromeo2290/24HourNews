@@ -3,7 +3,7 @@
 import { useStore } from '@/lib/store'
 
 interface AdBannerProps {
-  position: 'banner' | 'sidebar' | 'footer' | 'in-article'
+  position: 'banner' | 'sidebar' | 'footer' | 'in-article' | 'trending'
 }
 
 export default function AdBanner({ position }: AdBannerProps) {
@@ -18,13 +18,14 @@ export default function AdBanner({ position }: AdBannerProps) {
     sidebar: 'w-full',
     footer: 'w-full max-w-2xl mx-auto',
     'in-article': 'w-full my-6',
+    trending: 'w-full',
   }
 
   const inner = (
     <img
       src={ad.imageUrl}
       alt={ad.title}
-      className={`h-auto w-full object-contain rounded-lg ${position === 'sidebar' ? 'max-h-[250px]' : position === 'banner' ? 'max-h-[90px]' : 'max-h-[120px]'}`}
+      className={`h-auto w-full object-contain rounded-lg ${position === 'sidebar' ? 'max-h-[250px]' : position === 'trending' ? 'max-h-[250px]' : position === 'banner' ? 'max-h-[90px]' : 'max-h-[120px]'}`}
     />
   )
 

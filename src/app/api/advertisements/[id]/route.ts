@@ -24,7 +24,7 @@ export async function PUT(
     const body = await request.json();
     const { title, imageUrl, linkUrl, position, isActive, startDate, endDate } = body;
 
-    const validPositions = ["banner", "sidebar", "in_article", "footer"];
+    const validPositions = ["banner", "sidebar", "in_article", "footer", "trending"];
     if (position && !validPositions.includes(position)) {
       return NextResponse.json(
         { error: "Invalid position. Must be one of: " + validPositions.join(", ") },

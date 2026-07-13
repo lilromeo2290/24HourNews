@@ -285,7 +285,7 @@ interface AppState {
   latestNews: Article[]
   trendingNews: Article[]
   popularCategories: Category[]
-  advertisements: { banner: Ad[]; sidebar: Ad[]; footer: Ad[] }
+  advertisements: { banner: Ad[]; sidebar: Ad[]; footer: Ad[]; trending: Ad[] }
   fetchHomeData: () => Promise<void>
 
   // ---- Article (public) ----
@@ -483,7 +483,7 @@ export const useStore = create<AppState>()(
       latestNews: [],
       trendingNews: [],
       popularCategories: [],
-      advertisements: { banner: [], sidebar: [], footer: [] },
+      advertisements: { banner: [], sidebar: [], footer: [], trending: [] },
 
       fetchHomeData: async () => {
         set({ isLoading: true })
@@ -513,6 +513,7 @@ export const useStore = create<AppState>()(
               banner: adsData.banner ?? [],
               sidebar: adsData.sidebar ?? [],
               footer: adsData.footer ?? [],
+              trending: adsData.trending ?? [],
             },
             isLoading: false,
           })
