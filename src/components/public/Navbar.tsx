@@ -45,7 +45,7 @@ export default function Navbar() {
 
         {/* Desktop category nav */}
         <nav className="hidden lg:flex items-center gap-1">
-          {sortedCategories.filter(c => c.slug !== 'technology').slice(0, 8).map((cat) => (
+          {sortedCategories.filter(c => c.slug !== 'technology' && c.slug !== 'general-news').slice(0, 8).map((cat) => (
             <Button
               key={cat.id}
               variant="ghost"
@@ -113,7 +113,7 @@ export default function Navbar() {
                 >
                   Home
                 </Button>
-                {sortedCategories.filter(c => c.slug !== 'technology').map((cat) => (
+                {sortedCategories.filter(c => c.slug !== 'technology' && c.slug !== 'general-news').map((cat) => (
                   <Button
                     key={cat.id}
                     variant="ghost"
