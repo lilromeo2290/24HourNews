@@ -164,10 +164,16 @@ export default function HomePage() {
 
           {/* Right sidebar - beside Latest News/Politics */}
           <aside className="space-y-6">
-            {/* Trending Ad - beside Politics */}
-            <AdBanner position="trending" />
-            {/* Sidebar Ad */}
-            <AdBanner position="sidebar" />
+            <div>
+              <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider font-medium">Advertisement</p>
+              {/* Trending Ad - beside Politics */}
+              <AdBanner position="trending" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider font-medium">Advertisement</p>
+              {/* Sidebar Ad */}
+              <AdBanner position="sidebar" />
+            </div>
           </aside>
         </div>
       </section>
