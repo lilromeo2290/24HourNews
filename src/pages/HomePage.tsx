@@ -5,6 +5,7 @@ import { useStore } from '@/lib/store'
 import BreakingNewsTicker from '@/components/public/BreakingNewsTicker'
 import NewsCard from '@/components/public/NewsCard'
 import AdBanner from '@/components/public/AdBanner'
+import ClipsWidget from '@/components/public/ClipsWidget'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -169,11 +170,7 @@ export default function HomePage() {
               {/* Trending Ad - beside Politics */}
               <AdBanner position="trending" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider font-medium">Clips</p>
-              {/* Sidebar Ad */}
-              <AdBanner position="sidebar" />
-            </div>
+            <ClipsWidget />
           </aside>
         </div>
       </section>
