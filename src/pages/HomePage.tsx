@@ -170,7 +170,7 @@ export default function HomePage() {
               <AdBanner position="trending" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider font-medium">Advertisement</p>
+              <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider font-medium">Clips</p>
               {/* Sidebar Ad */}
               <AdBanner position="sidebar" />
             </div>
