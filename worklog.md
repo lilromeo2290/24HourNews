@@ -41,3 +41,25 @@ Stage Summary:
 - Fixed critical bcrypt compatibility bug in seed script
 - Database fully seeded with sample Ghana news content
 - All pages verified working via browser testing
+---
+Task ID: 2
+Agent: Main Agent
+Task: UI fixes, null-safety patches, navbar cleanup, GitHub token setup
+
+Work Log:
+- Deduplicated trending news (max 6 unique categories) and latest news (max 10, excluded opinion/lifestyle/regional-news) in /api/home route
+- Removed category badge from hero variant of NewsCard
+- Fixed null-safety: user.name.charAt(0) → (user.name || 'U').charAt(0) in Navbar
+- Fixed null-safety: article.author.name.charAt(0) and comment.authorName.charAt(0) in ArticlePage
+- Fixed null-safety: user.name.split(' ') → (user.name || 'U').split(' ') in AdminSidebar (2 locations)
+- Fixed null-safety: article.content.split('') → (article.content || '').split('') in ArticlePage
+- Replaced Footer Privacy Policy/Terms links with "Design & Powered by Clipe233 Engineers" linking to https://clipe233eng.net/
+- Removed admin/user button and login from public Navbar to prevent client-side crash
+- Updated GitHub token to new one, stored in .github_token (gitignored) to bypass push protection
+- Auto-push script reads token from .github_token file, runs every 5 minutes
+
+Stage Summary:
+- All known .charAt() and .split() null-safety crashes resolved
+- Public navbar cleaned: no admin/user/login buttons (to be redesigned later)
+- Auto-push daemon configured with new GitHub token
+- All changes pushed to https://github.com/lilromeo2290/24HourNews.git
