@@ -208,9 +208,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Footer Ad */}
-      <AdBanner position="footer" />
     </div>
   )
 }
