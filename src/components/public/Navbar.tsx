@@ -9,18 +9,16 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Search,
   Menu,
   Moon,
   Sun,
-  LogIn,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
 export default function Navbar() {
-  const { categories, navigate, user, isAuthenticated } = useStore()
+  const { categories, navigate } = useStore()
   const { theme, setTheme } = useTheme()
 
   const sortedCategories = [...categories].sort(
@@ -87,32 +85,7 @@ export default function Navbar() {
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           </Button>
 
-          {isAuthenticated && user ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden sm:flex items-center gap-2"
-              onClick={() => navigate({ type: 'admin-dashboard' })}
-            >
-              <Avatar className="h-6 w-6">
-                {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
-                <AvatarFallback className="text-xs" style={{ backgroundColor: '#003050', color: '#fff' }}>
-                  {(user.name || 'U').charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm">{user.name || 'User'}</span>
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hidden sm:flex"
-              onClick={() => navigate({ type: 'login' })}
-              aria-label="Login"
-            >
-              <LogIn className="h-5 w-5" />
-            </Button>
-          )}
+
 
           {/* Mobile hamburger */}
           <Sheet>
@@ -169,32 +142,7 @@ export default function Navbar() {
                   <Search className="mr-2 h-4 w-4" />
                   Search
                 </Button>
-                {isAuthenticated && user ? (
-                  <Button
-                    variant="ghost"
-                    className="justify-start"
-                    onClick={() => navigate({ type: 'admin-dashboard' })}
-                  >
-                    <Avatar className="mr-2 h-5 w-5">
-                      {user.avatar && (
-                        <AvatarImage src={user.avatar} alt={user.name} />
-                      )}
-                      <AvatarFallback className="text-[10px]" style={{ backgroundColor: '#003050', color: '#fff' }}>
-                        {(user.name || 'U').charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    Dashboard
-                  </Button>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    className="justify-start"
-                    onClick={() => navigate({ type: 'login' })}
-                  >
-                    <LogIn className="mr-2 h-4 w-4" />
-                    Login
-                  </Button>
-                )}
+
               </nav>
             </SheetContent>
           </Sheet>
