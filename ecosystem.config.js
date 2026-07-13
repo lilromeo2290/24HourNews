@@ -6,7 +6,7 @@ module.exports = {
       cwd: '/home/24hournews',
       env: {
         NODE_ENV: 'production',
-        PORT: 3000,
+        PORT: 3003,
         HOSTNAME: '0.0.0.0',
         DATABASE_URL: 'file:/home/24hournews/db/custom.db',
       },

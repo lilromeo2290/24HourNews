@@ -159,9 +159,9 @@ pm2 save
 step "Checking firewall"
 if command -v firewall-cmd &> /dev/null; then
     if firewall-cmd --state >/dev/null 2>&1; then
-        firewall-cmd --permanent --add-port=3000/tcp 2>/dev/null || true
+        firewall-cmd --permanent --add-port=3003/tcp 2>/dev/null || true
         firewall-cmd --reload 2>/dev/null || true
-        echo "Firewall: port 3000 opened"
+        echo "Firewall: port 3003 opened"
     fi
 fi
 
@@ -169,14 +169,14 @@ echo -e "\n${GREEN}=========================================${NC}"
 echo -e "${GREEN}  Deploy complete!${NC}"
 echo -e "${GREEN}=========================================${NC}"
 echo ""
-echo "App is running on port 3000"
+echo "App is running on port 3003"
 echo ""
 echo "PM2 commands:"
 echo "  pm2 logs 24hournews    - View logs"
 echo "  pm2 restart 24hournews - Restart app"
 echo "  pm2 stop 24hournews    - Stop app"
 echo ""
-echo "Test it: curl http://localhost:3000"
+echo "Test it: curl http://localhost:3003"
 echo ""
 echo "Next: Configure Nginx reverse proxy"
 echo "  1. Copy nginx.conf.example to Webuzo Nginx config"
