@@ -136,9 +136,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Ad under Trending News - full width row */}
-      <AdBanner position="trending" />
-
       {/* Banner Ad */}
       <AdBanner position="banner" />
 
@@ -168,8 +165,10 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Right sidebar */}
+          {/* Right sidebar - beside Latest News/Politics */}
           <aside className="space-y-6">
+            {/* Trending Ad - beside Politics */}
+            <AdBanner position="trending" />
             {/* Sidebar Ad */}
             <AdBanner position="sidebar" />
           </aside>
