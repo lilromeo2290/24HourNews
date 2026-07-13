@@ -133,11 +133,11 @@ export default function HomePage() {
               </div>
             </aside>
           )}
-
-          {/* Ad under Trending */}
-          <AdBanner position="trending" />
         </div>
       </section>
+
+      {/* Ad under Trending News - full width row */}
+      <AdBanner position="trending" />
 
       {/* Banner Ad */}
       <AdBanner position="banner" />
