@@ -136,9 +136,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Banner Ad */}
-      <AdBanner position="banner" />
-
       {/* Latest News + Sidebar */}
       <section>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
