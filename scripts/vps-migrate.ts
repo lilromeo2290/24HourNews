@@ -6,10 +6,29 @@
  * Usage: npx tsx scripts/vps-migrate.ts
  */
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
 const db = new PrismaClient();
 
 async function main() {
   console.log('Starting VPS database migration...');
+
+  // 0. Ensure admin user exists (self-contained, no seed dependency)
+  let author = await db.user.findFirst({ where: { role: { in: ['super_admin', 'admin', 'editor'] } } });
+  if (!author) {
+    const hashedPassword = await bcrypt.hash('Admin@123', 12);
+    author = await db.user.create({
+      data: {
+        email: 'admin@24hournews.com',
+        password: hashedPassword,
+        name: 'Super Admin',
+        role: 'super_admin',
+        bio: 'System administrator of 24Hour News.',
+      }
+    });
+    console.log('  Created admin user: admin@24hournews.com');
+  } else {
+    console.log(`  Using author: ${author.email}`);
+  }
 
   // 1. Create General News category
   let generalNews = await db.category.findFirst({ where: { slug: 'general-news' } });
@@ -27,14 +46,6 @@ async function main() {
   } else {
     console.log('  Category General News already exists, skipping.');
   }
-
-  // 2. Get author
-  const author = await db.user.findFirst({ where: { role: { in: ['super_admin', 'admin', 'editor'] } } });
-  if (!author) {
-    console.error('  ERROR: No admin user found. Run seed first.');
-    process.exit(1);
-  }
-  console.log(`  Using author: ${author.email}`);
 
   // 3. Update trending ad to Clipe233 image
   const trendingAd = await db.advertisement.findFirst({ where: { position: 'trending' } });
