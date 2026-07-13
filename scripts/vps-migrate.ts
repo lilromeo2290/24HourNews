@@ -19,7 +19,7 @@ async function main() {
     author = await db.user.create({
       data: {
         email: 'admin@24hournews.com',
-        password: hashedPassword,
+        passwordHash: hashedPassword,
         name: 'Super Admin',
         role: 'super_admin',
         bio: 'System administrator of 24Hour News.',
