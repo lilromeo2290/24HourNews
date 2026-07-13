@@ -130,7 +130,7 @@ export default function ArticlePage() {
   }
 
   // Split content for in-article ad placement
-  const contentParts = article.content.split('</p>')
+  const contentParts = (article.content || '').split('</p>')
   const midPoint = Math.min(3, Math.ceil(contentParts.length / 2))
   const firstHalf = contentParts.slice(0, midPoint).join('</p>') + '</p>'
   const secondHalf = contentParts.slice(midPoint).join('</p>')

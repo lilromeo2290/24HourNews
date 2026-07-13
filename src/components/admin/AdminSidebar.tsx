@@ -132,7 +132,7 @@ export default function AdminSidebar() {
             <Avatar className="size-9">
               <AvatarImage src={user.avatar} alt={user.name} />
               <AvatarFallback className="text-xs" style={{ backgroundColor: '#f08010', color: '#fff' }}>
-                {user.name
+                {(user.name || 'U')
                   .split(' ')
                   .map((n) => n[0])
                   .join('')
@@ -140,7 +140,7 @@ export default function AdminSidebar() {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 truncate">
-              <p className="truncate text-sm font-medium text-white">{user.name}</p>
+              <p className="truncate text-sm font-medium text-white">{user.name || 'User'}</p>
               <p className="truncate text-xs text-white/50 capitalize">
                 {user.role}
               </p>
@@ -163,7 +163,7 @@ export default function AdminSidebar() {
             <Avatar className="size-9">
               <AvatarImage src={user.avatar} alt={user.name} />
               <AvatarFallback className="text-xs" style={{ backgroundColor: '#f08010', color: '#fff' }}>
-                {user.name
+                {(user.name || 'U')
                   .split(' ')
                   .map((n) => n[0])
                   .join('')
