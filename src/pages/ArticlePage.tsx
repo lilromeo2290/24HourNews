@@ -208,7 +208,6 @@ export default function ArticlePage() {
           <Eye className="h-3.5 w-3.5" />
           {article.viewCount} views
         </span>
-      </div>
         <Badge
           className="ml-auto text-white text-xs"
           style={{ backgroundColor: article.category?.color || '#888' }}
