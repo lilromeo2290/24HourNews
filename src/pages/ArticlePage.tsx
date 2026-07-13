@@ -199,7 +199,7 @@ export default function ArticlePage() {
             <AvatarImage src={article.author.avatar} alt={article.author.name} />
           )}
           <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-            {article.author.name.charAt(0).toUpperCase()}
+            {(article.author?.name || 'A').charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div>
@@ -382,7 +382,7 @@ function CommentItem({ comment }: { comment: Comment }) {
     <div className="flex gap-3 rounded-lg border p-4">
       <Avatar className="h-8 w-8 shrink-0">
         <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-          {comment.authorName.charAt(0).toUpperCase()}
+          {(comment.authorName || 'A').charAt(0).toUpperCase()}
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">

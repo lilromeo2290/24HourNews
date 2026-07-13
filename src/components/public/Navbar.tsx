@@ -97,10 +97,10 @@ export default function Navbar() {
               <Avatar className="h-6 w-6">
                 {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
                 <AvatarFallback className="text-xs" style={{ backgroundColor: '#003050', color: '#fff' }}>
-                  {user.name.charAt(0).toUpperCase()}
+                  {(user.name || 'U').charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm">{user.name}</span>
+              <span className="text-sm">{user.name || 'User'}</span>
             </Button>
           ) : (
             <Button
@@ -180,7 +180,7 @@ export default function Navbar() {
                         <AvatarImage src={user.avatar} alt={user.name} />
                       )}
                       <AvatarFallback className="text-[10px]" style={{ backgroundColor: '#003050', color: '#fff' }}>
-                        {user.name.charAt(0).toUpperCase()}
+                        {(user.name || 'U').charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     Dashboard
