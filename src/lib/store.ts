@@ -497,10 +497,18 @@ export const useStore = create<AppState>()(
               trendingNews: Article[]
               popularCategories: Category[]
             }>('/api/home'),
-            apiFetch<{ banner: Ad[]; sidebar: Ad[]; footer: Ad[] }>(
+            apiFetch<{ advertisements: Ad[] }>(
               '/api/advertisements',
             ),
           ])
+
+          // Group flat ads array by position
+          const adGroups = { banner: [], sidebar: [], footer: [], trending: [], 'in-article': [] } as Record<string, Ad[]>
+          for (const ad of (adsData.advertisements ?? [])) {
+            const pos = ad.position ?? 'banner'
+            if (!adGroups[pos]) adGroups[pos] = []
+            adGroups[pos].push(ad)
+          }
 
           set({
             breakingNews: homeData.breakingNews ?? [],
@@ -510,10 +518,10 @@ export const useStore = create<AppState>()(
             trendingNews: homeData.trendingNews ?? [],
             popularCategories: homeData.popularCategories ?? [],
             advertisements: {
-              banner: adsData.banner ?? [],
-              sidebar: adsData.sidebar ?? [],
-              footer: adsData.footer ?? [],
-              trending: adsData.trending ?? [],
+              banner: adGroups.banner ?? [],
+              sidebar: adGroups.sidebar ?? [],
+              footer: adGroups.footer ?? [],
+              trending: adGroups.trending ?? [],
             },
             isLoading: false,
           })
