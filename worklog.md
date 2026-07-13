@@ -62,4 +62,24 @@ Stage Summary:
 - All known .charAt() and .split() null-safety crashes resolved
 - Public navbar cleaned: no admin/user/login buttons (to be redesigned later)
 - Auto-push daemon configured with new GitHub token
+---
+Task ID: 3
+Agent: Main Agent
+Task: Homepage layout refinements - ads, clips, categories
+
+Work Log:
+- Added trending ad placement below trending news, in right sidebar beside Latest News/Politics
+- Added "Advertisement" heading above trending ad
+- Changed second sidebar ad to "Clips" with branded placeholder image
+- Removed rectangular banner ad between hero slider and Politics section
+- Fixed ad grouping bug in store (API returns flat array, store now groups by position)
+- Removed Technology from navbar (desktop + mobile) and excluded from latest news
+- Reduced Clipe233 trending ad to 4:3 aspect ratio, matched Clips ad to same height
+- Created ClipsWidget component with 2x2 video thumbnail grid, play buttons, duration badges
+- Replaced second ad space with Clips video widget
+- Removed footer ad before newsletter section
+
+Stage Summary:
+- Homepage layout: Hero + Trending | Banner | Latest News + (Ad + Clips) sidebar | Newsletter
+- Auto-push daemon restarted with token ghp_YkW... (stored in .github_token, gitignored)
 - All changes pushed to https://github.com/lilromeo2290/24HourNews.git
