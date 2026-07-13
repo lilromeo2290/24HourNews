@@ -1,0 +1,1020 @@
+     1→import { PrismaClient } from "@prisma/client";
+     2→import bcrypt from "bcryptjs";
+     3→
+     4→const prisma = new PrismaClient();
+     5→
+     6→// ─────────────────────────────────────────────
+     7→// Helper: days-ago helper
+     8→// ─────────────────────────────────────────────
+     9→function daysAgo(days: number, hours = 0, minutes = 0): Date {
+    10→  const d = new Date();
+    11→  d.setDate(d.getDate() - days);
+    12→  d.setHours(hours, minutes, 0, 0);
+    13→  return d;
+    14→}
+    15→
+    16→// ─────────────────────────────────────────────
+    17→// 1. USERS
+    18→// ─────────────────────────────────────────────
+    19→const users = [
+    20→  {
+    21→    email: "admin@newsportal.com",
+    22→    password: "Admin@123",
+    23→    name: "Super Admin",
+    24→    role: "super_admin",
+    25→    bio: "System administrator and chief editor of Ghana News Portal.",
+    26→  },
+    27→  {
+    28→    email: "editor@newsportal.com",
+    29→    password: "Editor@123",
+    30→    name: "John Editor",
+    31→    role: "editor",
+    32→    bio: "Senior editor with over 15 years of experience in Ghanaian media.",
+    33→  },
+    34→  {
+    35→    email: "reporter1@newsportal.com",
+    36→    password: "Reporter@123",
+    37→    name: "Jane Reporter",
+    38→    role: "reporter",
+    39→    bio: "Political and business correspondent based in Accra.",
+    40→  },
+    41→  {
+    42→    email: "reporter2@newsportal.com",
+    43→    password: "Reporter@123",
+    44→    name: "Kwame Asante",
+    45→    role: "reporter",
+    46→    bio: "Sports and entertainment journalist covering West Africa.",
+    47→  },
+    48→];
+    49→
+    50→// ─────────────────────────────────────────────
+    51→// 2. CATEGORIES
+    52→// ─────────────────────────────────────────────
+    53→const categories = [
+    54→  {
+    55→    name: "Politics",
+    56→    slug: "politics",
+    57→    description: "Political news, governance, and policy updates from Ghana and across Africa.",
+    58→    color: "#dc2626",
+    59→    icon: "Landmark",
+    60→    order: 1,
+    61→    isFeatured: true,
+    62→  },
+    63→  {
+    64→    name: "Business",
+    65→    slug: "business",
+    66→    description: "Business news, financial markets, and economic analysis.",
+    67→    color: "#059669",
+    68→    icon: "TrendingUp",
+    69→    order: 2,
+    70→    isFeatured: true,
+    71→  },
+    72→  {
+    73→    name: "Sports",
+    74→    slug: "sports",
+    75→    description: "Sports news, match results, and athlete profiles.",
+    76→    color: "#d97706",
+    77→    icon: "Trophy",
+    78→    order: 3,
+    79→    isFeatured: true,
+    80→  },
+    81→  {
+    82→    name: "Entertainment",
+    83→    slug: "entertainment",
+    84→    description: "Music, film, arts, and celebrity news from Ghana and beyond.",
+    85→    color: "#9333ea",
+    86→    icon: "Clapperboard",
+    87→    order: 4,
+    88→    isFeatured: true,
+    89→  },
+    90→  {
+    91→    name: "Technology",
+    92→    slug: "technology",
+    93→    description: "Technology news, innovations, and digital trends.",
+    94→    color: "#0891b2",
+    95→    icon: "Cpu",
+    96→    order: 5,
+    97→    isFeatured: true,
+    98→  },
+    99→  {
+   100→    name: "Health",
+   101→    slug: "health",
+   102→    description: "Health news, medical breakthroughs, and public health updates.",
+   103→    color: "#16a34a",
+   104→    icon: "HeartPulse",
+   105→    order: 6,
+   106→    isFeatured: false,
+   107→  },
+   108→  {
+   109→    name: "Education",
+   110→    slug: "education",
+   111→    description: "Education sector news, school updates, and academic developments.",
+   112→    color: "#2563eb",
+   113→    icon: "GraduationCap",
+   114→    order: 7,
+   115→    isFeatured: false,
+   116→  },
+   117→  {
+   118→    name: "Opinion",
+   119→    slug: "opinion",
+   120→    description: "Op-eds, editorials, and expert analysis on current affairs.",
+   121→    color: "#ca8a04",
+   122→    icon: "MessageSquareText",
+   123→    order: 8,
+   124→    isFeatured: false,
+   125→  },
+   126→  {
+   127→    name: "Lifestyle",
+   128→    slug: "lifestyle",
+   129→    description: "Lifestyle, culture, food, and living in Ghana.",
+   130→    color: "#e11d48",
+   131→    icon: "Sparkles",
+   132→    order: 9,
+   133→    isFeatured: false,
+   134→  },
+   135→  {
+   136→    name: "Regional News",
+   137→    slug: "regional-news",
+   138→    description: "News from across Ghana's regions and neighbouring countries.",
+   139→    color: "#7c3aed",
+   140→    icon: "MapPin",
+   141→    order: 10,
+   142→    isFeatured: false,
+   143→  },
+   144→];
+   145→
+   146→// ─────────────────────────────────────────────
+   147→// 3. TAGS
+   148→// ─────────────────────────────────────────────
+   149→const tagNames = [
+   150→  "Elections",
+   151→  "Economy",
+   152→  "Football",
+   153→  "Music",
+   154→  "Film",
+   155→  "AI",
+   156→  "Mobile",
+   157→  "COVID-19",
+   158→  "Education Reform",
+   159→  "Infrastructure",
+   160→  "Agriculture",
+   161→  "Climate",
+   162→  "Tourism",
+   163→  "Security",
+   164→  "Youth",
+   165→  "Gender",
+   166→  "Healthcare",
+   167→  "Technology Policy",
+   168→  "Trade",
+   169→  "Energy",
+   170→];
+   171→
+   172→const tags = tagNames.map((name) => ({
+   173→  name,
+   174→  slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+   175→}));
+   176→
+   177→// ─────────────────────────────────────────────
+   178→// 4. ARTICLES (15 total: 12 published, 3 draft)
+   179→// ─────────────────────────────────────────────
+   180→const articles = [
+   181→  // ── PUBLISHED ──────────────────────────────
+   182→  {
+   183→    title: "Ghana's 2024 Election Results: A New Chapter in Democratic Governance",
+   184→    slug: "ghana-2024-election-results-new-chapter-democratic-governance",
+   185→    excerpt:
+   186→      "The Electoral Commission has officially declared the results of Ghana's tightly contested 2024 general elections, marking a significant moment in the nation's democratic journey.",
+   187→    content: `Ghana's Electoral Commission has officially declared the results of the 2024 general elections, bringing to a close what many observers have described as one of the most closely watched electoral processes in West Africa. The results, announced at the commission's headquarters in Accra, revealed a decisive mandate that has been widely praised by both domestic and international observers for its transparency and adherence to democratic principles.
+   188→
+   189→The chairperson of the Electoral Commission, addressing a packed press conference flanked by representatives from various political parties and civil society organisations, confirmed that the elections were conducted in a free, fair, and credible manner. Voter turnout was recorded at approximately 72 percent, a figure that reflects the deep engagement of the Ghanaian electorate in shaping the future of their country.
+   190→
+   191→Across the country's 275 constituencies, polling stations opened on time and the process was largely peaceful. The biometric verification system, introduced in previous election cycles, was deployed effectively across all 38,000 polling stations, significantly reducing incidents of voter fraud and ensuring the integrity of the ballot. International observer missions from the African Union, the Economic Community of West African States, and the European Union all issued preliminary statements commending the conduct of the elections.
+   192→
+   193→However, the process was not without its challenges. In a few constituencies in the Northern and Volta Regions, technical difficulties with electronic transmission of results led to delays in collation. The Electoral Commission addressed these issues by deploying backup systems and extending the collation window by 24 hours. Political parties raised concerns in about 15 constituencies, but these were resolved through the established dispute resolution mechanisms.
+   194→
+   195→The president-elect, in a victory speech delivered at the Independence Square, called for national unity and pledged to govern for all Ghanaians regardless of political affiliation. "Tonight, we celebrate not the victory of one party, but the victory of our democracy," the president-elect declared to thunderous applause from thousands of supporters. "The people have spoken, and their voice is clear. We must now come together to build the Ghana we all deserve."
+   196→
+   197→The outgoing president conceded defeat in a televised address, congratulating the president-elect and urging supporters to accept the results peacefully. This graceful concession was hailed as a testament to the maturing of Ghana's democratic culture, which has seen peaceful transfers of power since the return to multi-party democracy in 1992.
+   198→
+   199→Economic issues dominated the campaign, with voters expressing deep concern about inflation, the cost of living, and youth unemployment. The new administration will face immediate pressure to deliver on campaign promises related to economic recovery, job creation, and fiscal discipline. Analysts have noted that the incoming government inherits a challenging economic landscape, with public debt exceeding 80 percent of GDP and inflation still in double digits despite recent improvements.
+   200→
+   201→Civil society organisations have called on the new government to prioritise anti-corruption measures and strengthen public institutions. "The expectations are enormous," said the executive director of a leading governance think tank. "Ghanaians want to see tangible improvements in their daily lives, and they will hold this government accountable from day one."
+   202→
+   203→As the country prepares for the transition of power, attention now turns to the composition of the new cabinet and the policy direction the administration will take. The peaceful conclusion of these elections once again positions Ghana as a beacon of democratic stability on the African continent.`,
+   204→    status: "published",
+   205→    isFeatured: true,
+   206→    isPinned: false,
+   207→    isBreaking: true,
+   208→    publishedAt: daysAgo(0, 8, 30),
+   209→    categorySlug: "politics",
+   210→    authorEmail: "editor@newsportal.com",
+   211→    tagNames: ["Elections", "Security"],
+   212→  },
+   213→  {
+   214→    title: "Ghana's Economy Shows Signs of Recovery as GDP Growth Hits 4.2 Percent",
+   215→    slug: "ghana-economy-recovery-gdp-growth-4-2-percent",
+   216→    excerpt:
+   217→      "Latest figures from the Ghana Statistical Service show the economy growing at 4.2 percent in the third quarter, driven by agriculture and services sectors.",
+   218→    content: `Ghana's economy is showing encouraging signs of recovery, with the latest gross domestic product figures from the Ghana Statistical Service revealing a growth rate of 4.2 percent for the third quarter of 2024. This represents a notable improvement from the 3.1 percent recorded in the previous quarter and signals that the government's economic recovery programme may be gaining traction.
+   219→
+   220→The services sector continued to be the largest contributor to GDP, accounting for approximately 48 percent of economic output. Within this sector, information and communications technology showed particularly strong growth, expanding by 12.3 percent year-on-year. The financial services sub-sector also performed well, benefiting from the Bank of Ghana's monetary policy adjustments and increased credit activity.
+   221→
+   222→Agriculture, which employs nearly 40 percent of Ghana's workforce, grew by 5.8 percent, outpacing its historical average. This growth was driven by favourable weather conditions, improved access to fertiliser through government subsidy programmes, and expanding export markets for cocoa and other cash crops. The cocoa sub-sector benefited from higher international prices, with Ghana earning significantly more from cocoa exports compared to the same period last year.
+   223→
+   224→The industrial sector, however, remained a mixed picture. While mining and quarrying activities increased by 3.5 percent, supported by strong gold prices on the international market, manufacturing growth was modest at 1.8 percent. Manufacturers have cited high energy costs, the depreciation of the cedi, and difficulties accessing affordable credit as persistent constraints on expansion and hiring.
+   225→
+   226→Inflation continued its downward trajectory, falling to 18.4 percent in October from a peak of over 54 percent in late 2022. The Bank of Ghana's tight monetary policy stance, which has seen the policy rate maintained at relatively high levels, has been instrumental in bringing inflation under control. Food inflation, which had been the primary driver of overall price increases, has moderated significantly, though non-food inflation remains stubbornly high.
+   227→
+   228→The cedi, Ghana's currency, has shown relative stability against the major trading currencies in recent months, a development that economists attribute to improved foreign exchange inflows from cocoa exports, remittances from the Ghanaian diaspora, and the International Monetary Fund programme. The current account deficit has narrowed to 2.1 percent of GDP, well below the 4.8 percent recorded a year earlier.
+   229→
+   230→Government revenue collection has improved, with the Ghana Revenue Authority exceeding its quarterly target by 8 percent. The introduction of new digital tax administration tools and the broadening of the tax base have contributed to this improvement. However, government expenditure remains high, driven primarily by debt service obligations and public sector wages, and the fiscal deficit for the year is projected at around 5.5 percent of GDP.
+   231→
+   232→Economists have welcomed the positive GDP numbers but caution that the recovery remains fragile. "We are seeing green shoots, but we are not out of the woods yet," said a senior economist at the Institute of Economic Affairs. "The key challenge now is to sustain this momentum while addressing the structural weaknesses that made the economy vulnerable in the first place. That means investing in infrastructure, improving the business environment, and building fiscal buffers for future shocks."
+   233→
+   234→The Ministry of Finance has expressed optimism about the outlook for 2025, projecting GDP growth of between 4.5 and 5 percent if current trends continue and global economic conditions remain favourable. The government has also reaffirmed its commitment to the IMF-supported economic reform programme, which is entering its final year.`,
+   235→    status: "published",
+   236→    isFeatured: true,
+   237→    isPinned: true,
+   238→    isBreaking: false,
+   239→    publishedAt: daysAgo(1, 14, 15),
+   240→    categorySlug: "business",
+   241→    authorEmail: "reporter1@newsportal.com",
+   242→    tagNames: ["Economy", "Trade", "Infrastructure"],
+   243→  },
+   244→  {
+   245→    title: "Black Stars Secure Crucial AFCON Qualifier Win Against Nigeria in Accra",
+   246→    slug: "black-stars-crucial-afcon-qualifier-win-against-nigeria-accra",
+   247→    excerpt:
+   248→      "Ghana's national football team delivered a commanding performance at the Baba Yara Stadium, defeating Nigeria 2-1 to boost their Africa Cup of Nations qualification hopes.",
+   249→    content: `The Black Stars of Ghana delivered a performance of immense character and quality at the Baba Yara Stadium in Kumasi, defeating their West African rivals Nigeria 2-1 in a crucial Africa Cup of Nations qualifier that has reignited the nation's passion for football and boosted the team's chances of reaching the tournament proper.
+   250→
+   251→A crowd of over 40,000 passionate fans created an electric atmosphere at the stadium, with the stands a sea of red, gold, and green from the first whistle to the last. The players fed off this energy, pressing Nigeria high up the pitch from the opening minutes and creating several early chances that tested the resolve of the Super Eagles' defence.
+   252→
+   253→The opening goal came in the 23rd minute, following a sweeping counter-attack that showcased the growing understanding between Ghana's attacking players. A perfectly weighted through ball from the midfield found the streaking forward, who calmly slotted the ball past the Nigerian goalkeeper to send the stadium into raptures. The celebration was a display of pure joy, with players and fans united in a moment of shared euphoria.
+   254→
+   255→Nigeria, to their credit, responded well and equalised just before half-time through a well-taken free kick that left Ghana's goalkeeper with no chance. The second half began with both teams trading blows in a thrilling end-to-end contest, but it was Ghana who found the decisive moment in the 72nd minute. A corner kick delivery was met powerfully by a towering header, and the ball cannoned off the crossbar and over the line, confirmed by goal-line technology.
+   256→
+   257→The coach praised his players' resilience and tactical discipline in the post-match press conference. "This was a team performance in every sense of the word," he said. "Every player gave everything they had, and the fans were our twelfth man. We still have work to do to qualify, but this result gives us a tremendous platform to build on."
+   258→
+   259→The victory moves Ghana to the top of their qualification group with two matches remaining. The team will face their remaining fixtures with renewed confidence, knowing that maximum points from those games would secure their place at the Africa Cup of Nations.
+   260→
+   261→Off the pitch, the Ghana Football Association announced that ticket sales for the match had generated record revenue, with proceeds being directed towards youth football development programmes across the country. The association also revealed plans to upgrade training facilities at the national team's base in Accra, as part of a broader strategy to professionalise the sport in Ghana.
+   262→
+   263→Football analysts have noted the emergence of several young players in the current squad, suggesting that the future of Ghanaian football is bright. "We are seeing a new generation of players who are technically gifted, physically strong, and mentally tough," said a respected football commentator. "If we can continue to develop these players and give them the right competitive environment, Ghana can once again become a force to be reckoned with on the continental and global stage."
+   264→
+   265→The government has also pledged continued support for sports development, with the Minister of Youth and Sports announcing a new funding package for grassroots football academies. "Football is more than just a game in Ghana," the minister said. "It is a source of national pride, unity, and inspiration. We must invest in it accordingly."`,
+   266→    status: "published",
+   267→    isFeatured: true,
+   268→    isPinned: false,
+   269→    isBreaking: true,
+   270→    publishedAt: daysAgo(0, 20, 0),
+   271→    categorySlug: "sports",
+   272→    authorEmail: "reporter2@newsportal.com",
+   273→    tagNames: ["Football", "Youth"],
+   274→  },
+   275→  {
+   276→    title: "Stonebwoy Wins Best African Act at International Music Awards in London",
+   277→    slug: "stonebwoy-wins-best-african-act-international-music-awards-london",
+   278→    excerpt:
+   279→      "Ghanaian dancehall artist Stonebwoy has been crowned Best African Act at a prestigious international music ceremony, cementing Ghana's growing influence on the global music stage.",
+   280→    content: `Ghanaian dancehall and afrobeats sensation Stonebwoy has added another accolade to his already impressive collection, winning the Best African Act award at the International Music Awards ceremony held at the O2 Arena in London. The victory marks the second time the artist has won the award and underscores the growing global recognition of Ghanaian music on the world stage.
+   281→
+   282→Stonebwoy, whose real name is Livingstone Etse Satekla, accepted the award in a ceremony attended by some of the biggest names in the global music industry. Dressed in a custom-designed outfit that blended traditional Kente cloth elements with contemporary streetwear, the artist delivered an acceptance speech that celebrated African creativity and called for greater investment in the continent's creative industries.
+   283→
+   284→"This award is not just for me," Stonebwoy told the audience. "It is for every Ghanaian artist, every producer, every sound engineer, and every fan who has believed in our music. Africa is the future of music, and Ghana is leading the charge. We are not asking for a seat at the table anymore — we are building our own table."
+   285→
+   286→The award comes at a time when Ghanaian music is experiencing unprecedented international attention. Artists such as Sarkodie, Shatta Wale, Amaarae, King Promise, and M.anifest have all achieved significant international recognition in recent years, contributing to what industry observers have termed the "Ghanaian music renaissance." The success of these artists has been driven by a unique sound that blends traditional Ghanaian rhythms with contemporary genres including dancehall, afrobeats, hip-hop, and R&B.
+   287→
+   288→The Ghanaian music industry has also benefited from strategic partnerships with international record labels and streaming platforms. Data from leading streaming services shows that Ghanaian music has seen a 340 percent increase in global streams over the past three years, with significant growth in markets across Europe, North America, and Asia.
+   289→
+   290→The Minister of Tourism, Arts and Culture congratulated Stonebwoy on the achievement and used the occasion to announce a new government initiative aimed at supporting the creative arts sector. The initiative, which includes a dedicated creative arts fund and the establishment of a national music archive, is expected to provide financial support and infrastructure for Ghanaian artists.
+   291→
+   292→Music industry stakeholders have welcomed the announcement but called for more comprehensive reforms, including stronger copyright protection, improved royalty collection mechanisms, and investment in music education. "We have the talent, we have the creativity, and now we have the global attention," said the president of the Musicians Union of Ghana. "What we need is the institutional framework to ensure that our artists can build sustainable careers and that the industry contributes meaningfully to the national economy."
+   293→
+   294→Back in Ghana, fans took to social media to celebrate Stonebwoy's victory, with the artist's name trending at number one on Twitter Ghana for over 12 hours. A victory concert is being planned for later this month at the Independence Square in Accra, which is expected to draw tens of thousands of fans.`,
+   295→    status: "published",
+   296→    isFeatured: true,
+   297→    isPinned: false,
+   298→    isBreaking: false,
+   299→    publishedAt: daysAgo(2, 10, 45),
+   300→    categorySlug: "entertainment",
+   301→    authorEmail: "reporter2@newsportal.com",
+   302→    tagNames: ["Music", "Film", "Tourism"],
+   303→  },
+   304→  {
+   305→    title: "Ghana Launches National AI Strategy to Drive Digital Transformation",
+   306→    slug: "ghana-launches-national-ai-strategy-digital-transformation",
+   307→    excerpt:
+   308→      "The government has unveiled a comprehensive national artificial intelligence strategy aimed at positioning Ghana as a leader in AI adoption and innovation across West Africa.",
+   309→    content: `The government of Ghana has launched an ambitious National Artificial Intelligence Strategy, a comprehensive blueprint designed to harness the transformative potential of AI technologies for economic growth, public service delivery, and social development. The strategy, developed over 18 months with input from academia, industry, and international partners, sets out a roadmap for AI adoption across key sectors including agriculture, healthcare, education, and governance.
+   310→
+   311→The Vice President, who launched the strategy at a ceremony in Accra attended by technology leaders, diplomats, and academics, described AI as "the most consequential technology of our time" and pledged the government's full commitment to creating an enabling environment for AI innovation. "Ghana will not be a passive observer of the AI revolution," the Vice President declared. "We will be an active participant and, ultimately, a leader in developing AI solutions that address our unique challenges as a nation and a continent."
+   312→
+   313→The strategy identifies five strategic pillars: building AI talent and capacity, strengthening data infrastructure and governance, fostering AI research and innovation, promoting responsible and ethical AI deployment, and creating an enabling regulatory and policy environment. Under each pillar, specific initiatives and targets have been outlined, with implementation timelines stretching to 2030.
+   314→
+   315→A key component of the strategy is the establishment of a National AI Centre of Excellence, which will serve as a hub for AI research, development, and deployment. The centre, to be hosted at a leading university in collaboration with the private sector, will focus on developing AI applications tailored to Ghanaian and African contexts. Initial priority areas include AI-powered agricultural advisory systems, diagnostic tools for healthcare facilities in underserved areas, and intelligent transportation management systems for urban areas.
+   316→
+   317→The strategy also addresses the critical need for AI talent development. Ghana currently faces a significant shortage of AI and data science professionals, a gap the strategy seeks to close through a combination of university curriculum reforms, vocational training programmes, and international partnerships. The government has announced scholarships for 500 Ghanaian students to pursue advanced degrees in AI and related fields over the next five years.
+   318→
+   319→Recognising the importance of data as the foundation of AI, the strategy includes provisions for strengthening national data infrastructure, including the establishment of data sharing frameworks between government agencies and the creation of secure, interoperable data platforms. Privacy and data protection safeguards are prominently featured, with the strategy mandating adherence to the Data Protection Act and alignment with international best practices.
+   320→
+   321→The private sector has responded positively to the strategy, with several major technology companies announcing planned investments in Ghana's AI ecosystem. A leading global technology firm has pledged to establish an AI research lab in Accra, creating an estimated 200 high-skilled jobs. Local startups working in the AI space have also welcomed the strategy, noting that it provides much-needed policy clarity and institutional support.
+   322→
+   323→However, some critics have raised concerns about the practical challenges of implementation, particularly given the country's existing infrastructure constraints. "The strategy is well-conceived and ambitious, but the devil will be in the details of execution," said a technology policy analyst. "We need reliable electricity, affordable and fast internet connectivity, and sustained investment in education. Without these fundamentals, even the best AI strategy will struggle to deliver results."
+   324→
+   325→The Ministry of Communications and Digitalisation, which will coordinate the strategy's implementation, has established a multi-stakeholder steering committee to oversee progress and ensure accountability. The first progress report is expected within six months.`,
+   326→    status: "published",
+   327→    isFeatured: false,
+   328→    isPinned: false,
+   329→    isBreaking: false,
+   330→    publishedAt: daysAgo(1, 9, 0),
+   331→    categorySlug: "technology",
+   332→    authorEmail: "reporter1@newsportal.com",
+   333→    tagNames: ["AI", "Technology Policy", "Education Reform"],
+   334→  },
+   335→  {
+   336→    title: "Mobile Money Transactions in Ghana Surpass GH¢1 Trillion Mark",
+   337→    slug: "mobile-money-transactions-ghana-surpass-1-trillion-cedis",
+   338→    excerpt:
+   339→      "The Bank of Ghana reports that mobile money transactions have exceeded one trillion cedis for the first time, highlighting the country's leadership in digital financial services in Africa.",
+   340→    content: `Mobile money transactions in Ghana have surpassed the historic milestone of one trillion Ghana cedis for the first time, according to data released by the Bank of Ghana. The achievement underscores Ghana's position as one of the leading markets for digital financial services in Africa and reflects the profound transformation of the country's financial landscape over the past decade.
+   341→
+   342→The data, which covers the period from January to October 2024, shows that the total value of mobile money transactions reached approximately GH¢1.2 trillion, representing a year-on-year increase of 38 percent. The number of active mobile money accounts has also grown significantly, now exceeding 22 million registered accounts in a country with a population of approximately 33 million people.
+   343→
+   344→Ghana's mobile money ecosystem is anchored by the country's telecommunications operators, with MTN Mobile Money remaining the dominant platform. However, competitors including Vodafone Cash, now rebranded as Telecel Cash, and AT Money have also seen substantial growth, contributing to a increasingly competitive and innovative market. The introduction of mobile money interoperability in 2023, which allows seamless transfers between different mobile money platforms and traditional bank accounts, has been a game-changer for financial inclusion.
+   345→
+   346→The Central Bank governor attributed the growth to several factors, including the expansion of agent networks into rural and semi-urban areas, the introduction of new services such as savings and micro-loans on mobile money platforms, and the government's policy of digitising salary payments and social welfare disbursements. "Mobile money has moved beyond being just a payment tool," the governor said. "It has become a platform for savings, credit, insurance, and investment, bringing formal financial services to millions of Ghanaians who were previously excluded."
+   347→
+   348→The impact on financial inclusion has been particularly notable. Data from the World Bank's Global Findex indicates that the proportion of Ghanaian adults with a formal financial account has increased from 41 percent in 2017 to over 68 percent in 2024, with mobile money being the primary driver of this expansion. Women, rural populations, and small business owners have been the biggest beneficiaries of this revolution.
+   349→
+   350→Small and medium-sized enterprises have also embraced mobile money as a primary tool for receiving payments and managing their finances. A recent survey by the Ghana Chamber of Commerce found that 78 percent of SMEs now accept mobile money payments, up from 45 percent just three years ago. This has reduced the reliance on cash transactions, lowered the risk of theft, and improved business record-keeping.
+   351→
+   352→Despite the impressive growth, challenges remain. Fraud and cybercrime targeting mobile money users have increased, with the Bank of Ghana reporting a 25 percent rise in reported incidents. The central bank has responded by strengthening KYC (Know Your Customer) requirements, introducing transaction limits, and working with telecommunications companies to enhance security features. Consumer education campaigns are also being conducted to raise awareness about common fraud schemes.
+   353→
+   354→The government has announced plans to build on the success of mobile money by developing a comprehensive national digital payments strategy that will encompass not just mobile money but also digital banking, e-commerce payments, and central bank digital currencies. "Our vision is a Ghana where every transaction, no matter how small, can be conducted digitally, securely, and affordably," said the Minister of Finance.`,
+   355→    status: "published",
+   356→    isFeatured: false,
+   357→    isPinned: false,
+   358→    isBreaking: false,
+   359→    publishedAt: daysAgo(2, 16, 30),
+   360→    categorySlug: "business",
+   361→    authorEmail: "reporter1@newsportal.com",
+   362→    tagNames: ["Mobile", "Economy", "Technology Policy"],
+   363→  },
+   364→  {
+   365→    title: "Ghana Health Service Launches Nationwide Mental Health Awareness Campaign",
+   366→    slug: "ghana-health-service-launches-nationwide-mental-health-awareness-campaign",
+   367→    excerpt:
+   368→      "A groundbreaking mental health campaign is being rolled out across all 16 regions to combat stigma and improve access to mental healthcare services.",
+   369→    content: `The Ghana Health Service has launched a comprehensive nationwide mental health awareness campaign, the largest of its kind in the country's history, aimed at breaking down the stigma surrounding mental health conditions and improving access to care for millions of Ghanaians living with mental health disorders.
+   370→
+   371→The campaign, themed "Your Mind Matters," was officially launched in Accra by the Director-General of the Ghana Health Service, with support from the World Health Organization, UNICEF, and several local mental health advocacy organisations. The initiative will run for an initial period of 18 months and will encompass community outreach programmes, media engagement, school-based interventions, and the training of primary healthcare workers in basic mental health screening and support.
+   372→
+   373→Mental health remains one of the most neglected areas of healthcare in Ghana. Studies estimate that approximately 3.1 million Ghanaians suffer from some form of mental health condition, ranging from common mental disorders such as depression and anxiety to severe conditions including schizophrenia and bipolar disorder. Yet, the country has fewer than 40 psychiatrists and 500 psychiatric nurses serving a population of 33 million, a ratio that is grossly inadequate.
+   374→
+   375→The stigma attached to mental illness in Ghanaian society means that many people suffering from mental health conditions do not seek help, often turning instead to traditional and faith-based healers. While these practitioners play an important cultural role, they are not equipped to provide evidence-based treatment for serious mental health conditions. The campaign seeks to change these attitudes by educating the public about the biological basis of mental illness and the effectiveness of available treatments.
+   376→
+   377→A central component of the campaign is the integration of mental health services into primary healthcare. Under this model, community health nurses and other primary care providers will receive training in basic mental health screening, enabling them to identify potential cases early and refer patients to appropriate specialists. This approach is particularly important for reaching rural communities, where access to specialist mental health services is extremely limited.
+   378→
+   379→The campaign also targets young people, who are disproportionately affected by mental health issues. Recent surveys have found that approximately 20 percent of Ghanaian adolescents report symptoms of depression, driven by academic pressure, social media use, economic hardship, and family instability. School-based counselling programmes will be established in 500 senior high schools across the country as part of the initiative.
+   380→
+   381→Funding for the campaign has been provided through a combination of government allocation, donor support, and private sector partnerships. A leading telecommunications company has committed GH¢5 million to support the digital components of the campaign, including a mental health hotline and a mobile app that provides self-help resources and connects users with counsellors.
+   382→
+   383→Mental health professionals have welcomed the campaign but emphasise that sustained investment in mental health infrastructure and human resources is essential for lasting change. "Awareness is the first step, but it cannot be the last," said the chief psychiatrist at the Accra Psychiatric Hospital. "We need more trained professionals, more facilities, better supply chains for essential medications, and a commitment from the government to make mental health a budgetary priority."`,
+   384→    status: "published",
+   385→    isFeatured: false,
+   386→    isPinned: false,
+   387→    isBreaking: false,
+   388→    publishedAt: daysAgo(3, 11, 0),
+   389→    categorySlug: "health",
+   390→    authorEmail: "reporter1@newsportal.com",
+   391→    tagNames: ["Healthcare", "Youth", "Gender"],
+   392→  },
+   393→  {
+   394→    title: "Free SHS Policy: Five Years On, What Has Changed for Ghanaian Students?",
+   395→    slug: "free-shs-policy-five-years-what-changed-ghanaian-students",
+   396→    excerpt:
+   397→      "As Ghana's flagship Free Senior High School policy marks its fifth anniversary, educators and analysts assess its impact on access, quality, and educational outcomes.",
+   398→    content: `Ghana's Free Senior High School (Free SHS) policy, one of the most ambitious educational interventions in the country's history, has marked its fifth anniversary, prompting a comprehensive assessment of its impact on educational access, quality, and outcomes. The policy, which was implemented in September 2017, eliminated tuition and other fees for all students enrolled in public senior high schools, dramatically expanding access to secondary education.
+   399→
+   400→The numbers tell an impressive story of expanded access. Before the policy was introduced, approximately 800,000 students were enrolled in senior high schools across the country. Today, that figure stands at over 1.4 million, representing a 75 percent increase in enrollment. The policy has been particularly transformative for students from low-income families and rural communities, many of whom would previously have been unable to afford secondary education.
+   401→
+   402→Gender parity in secondary school enrollment has also improved significantly. The ratio of girls to boys in senior high schools has moved from approximately 0.85 to 0.94 over the five-year period, narrowing the gender gap in educational attainment. In some regions, including the Northern and Upper East Regions, girls now outnumber boys in senior high school enrollment for the first time.
+   403→
+   404→However, the rapid expansion of enrollment has placed enormous strain on the education system. Class sizes have increased dramatically, with some schools reporting student-to-teacher ratios exceeding 50:1, far above the recommended maximum of 25:1. Infrastructure has not kept pace with demand, and many schools are operating double-track systems, where students attend school in shifts to accommodate the increased numbers.
+   405→
+   406→The quality of education delivered under the Free SHS policy has been a subject of intense debate. Results from the West African Senior School Certificate Examination (WASSCE) have been mixed, with the overall pass rate remaining relatively stable but concerns raised about declining performance in core subjects including mathematics and science. Educators argue that the pressure of large class sizes and inadequate teaching materials has made it difficult to maintain instructional quality.
+   407→
+   408→The government has defended the policy, pointing to the fundamental importance of educational access. "Before Free SHS, hundreds of thousands of capable young Ghanaians were denied the opportunity to complete secondary education simply because their families could not afford it," said the Minister of Education. "Access must come first. We are now working systematically to address the quality challenges that come with expansion."
+   409→
+   410→To address infrastructure gaps, the government has initiated a major school building programme, with 200 new senior high school projects at various stages of completion across the country. Additionally, a comprehensive teacher recruitment drive is underway, with the goal of hiring 15,000 new teachers over the next three years.
+   411→
+   412→Education analysts have suggested several reforms to improve the policy's effectiveness, including targeted support for low-performing schools, the introduction of technology-assisted learning to supplement classroom instruction, and greater involvement of the private sector in educational delivery. "Free SHS has been a remarkable achievement in terms of access," said an education policy researcher at the University of Ghana. "The challenge now is to ensure that access translates into meaningful learning outcomes that prepare our young people for the future."`,
+   413→    status: "published",
+   414→    isFeatured: false,
+   415→    isPinned: false,
+   416→    isBreaking: false,
+   417→    publishedAt: daysAgo(4, 8, 15),
+   418→    categorySlug: "education",
+   419→    authorEmail: "reporter2@newsportal.com",
+   420→    tagNames: ["Education Reform", "Youth"],
+   421→  },
+   422→  {
+   423→    title: "Opinion: Why Ghana Must Lead the Climate Conversation in Africa",
+   424→    slug: "opinion-why-ghana-must-lead-climate-conversation-africa",
+   425→    excerpt:
+   426→      "As climate change intensifies its impact on African communities, Ghana has a unique opportunity to champion the continent's climate agenda on the global stage.",
+   427→    content: `As the world grapples with the escalating consequences of climate change, Africa finds itself on the front lines of a crisis it did little to create but is suffering the most from. Of all the nations on the continent, Ghana occupies a uniquely strategic position to lead Africa's climate conversation and advocate for the interests of vulnerable communities on the global stage.
+   428→
+   429→Ghana's vulnerability to climate change is well documented. Rising sea levels threaten coastal communities, including parts of the capital city, Accra, where erosion has already destroyed homes and infrastructure. Changing rainfall patterns are disrupting agricultural cycles, threatening food security for millions of smallholder farmers who depend on predictable weather for their livelihoods. Increasing temperatures are exacerbating the spread of vector-borne diseases, placing additional strain on an already overburdened healthcare system.
+   430→
+   431→Yet, Ghana also possesses significant strengths that position it for climate leadership. The country has a strong democratic tradition and a vibrant civil society that can drive accountability and public engagement on climate issues. Ghana was one of the first African countries to develop a National Climate Change Policy and has made notable commitments under the Paris Agreement, including a target to reduce greenhouse gas emissions by 64 percent by 2030.
+   432→
+   433→The country's renewable energy potential is enormous. Ghana has abundant solar resources, with average daily solar radiation of 4.4 to 5.6 kilowatt-hours per square metre. Wind energy potential along the eastern coastline, hydroelectric power from the Volta River system, and growing interest in biomass energy all point to a future in which Ghana could meet a significant portion of its energy needs from renewable sources.
+   434→
+   435→Ghana's position as a respected voice in international forums, including the United Nations, the African Union, and the Economic Community of West African States, gives it diplomatic leverage to advocate for climate justice. The principle of common but differentiated responsibilities — the idea that countries that have contributed most to global emissions should bear the greatest burden of addressing climate change — must remain at the heart of international climate negotiations.
+   436→
+   437→At the national level, Ghana must accelerate the implementation of its climate commitments. This means investing in climate-resilient agriculture, expanding renewable energy infrastructure, protecting and restoring forests and wetlands, and building climate-resilient cities. The upcoming national climate adaptation plan provides a framework for these efforts, but its success will depend on adequate financing, effective coordination, and sustained political will.
+   438→
+   439→The private sector also has a critical role to play. Ghanaian businesses must integrate climate considerations into their strategies and operations, not only because it is the right thing to do but because climate resilience is increasingly a competitive advantage. Investors worldwide are shifting capital towards sustainable businesses, and Ghanaian companies that fail to adapt risk being left behind.
+   440→
+   441→Ghana's youth, who will inherit the consequences of the climate decisions made today, must be at the centre of the climate conversation. Young Ghanaians are already showing remarkable leadership on climate issues, organising awareness campaigns, developing innovative solutions, and holding leaders accountable. Their energy, creativity, and sense of urgency are exactly what the climate movement needs.
+   442→
+   443→The time for incremental action has passed. Ghana must seize the moment and position itself as the voice of climate ambition in Africa. The world is watching, and the stakes have never been higher.`,
+   444→    status: "published",
+   445→    isFeatured: false,
+   446→    isPinned: false,
+   447→    isBreaking: false,
+   448→    publishedAt: daysAgo(5, 7, 0),
+   449→    categorySlug: "opinion",
+   450→    authorEmail: "editor@newsportal.com",
+   451→    tagNames: ["Climate", "Energy", "Agriculture"],
+   452→  },
+   453→  {
+   454→    title: "Accra's Emerging Food Scene: How Ghanaian Chefs Are Redefining West African Cuisine",
+   455→    slug: "accras-emerging-food-scene-ghanaian-chefs-redefining-west-african-cuisine",
+   456→    excerpt:
+   457→      "A new generation of Ghanaian chefs is putting the country on the global culinary map, blending traditional flavours with modern techniques and international influences.",
+   458→    content: `Accra is experiencing a culinary revolution that is transforming the city's food landscape and putting Ghanaian cuisine on the global map. A new generation of chefs, restaurateurs, and food entrepreneurs are reimagining traditional West African dishes, blending them with modern culinary techniques and international influences to create a dining scene that is vibrant, innovative, and uniquely Ghanaian.
+   459→
+   460→The transformation is visible across the city. In neighbourhoods like Osu, Labone, and East Legon, new restaurants and cafes are opening at a rapid pace, each offering a distinct take on Ghanaian and pan-African cuisine. From upscale dining establishments that present traditional dishes like jollof rice, groundnut soup, and fufu in refined, contemporary settings to casual eateries that celebrate the rich diversity of Ghanaian street food, the options for diners have never been more exciting.
+   461→
+   462→Several Ghanaian chefs have gained international recognition in recent years. One notable figure has been featured in international food publications and has hosted pop-up dinners in London, New York, and Paris, introducing global audiences to the depth and complexity of Ghanaian flavours. "Our cuisine has always been incredible," the chef said in a recent interview. "What is changing is that we are finally presenting it with the confidence and creativity it deserves. We are not apologising for our food anymore."
+   463→
+   464→The movement is driven by a desire to preserve and elevate traditional culinary knowledge while embracing innovation. Many chefs are working directly with smallholder farmers and local producers to source indigenous ingredients that have been overlooked or undervalued. Ingredients like dawadawa (fermented locust beans), prekese (African pepper), and red palm oil are being used in new and unexpected ways, creating dishes that are rooted in tradition but forward-looking in their execution.
+   465→
+   466→Food tourism is also benefiting from Accra's culinary renaissance. Visitors to the city are increasingly seeking out authentic food experiences, from guided street food tours in markets like Makola and Kejetia to cooking classes that teach the art of preparing traditional Ghanaian dishes. The Ghana Tourism Authority has identified food tourism as a key growth area and is developing a national gastronomy strategy to promote Ghana as a premier culinary destination in West Africa.
+   467→
+   468→The business of food in Ghana is also evolving. Food delivery platforms have exploded in popularity, with several local startups competing for market share alongside international players. Cloud kitchens, also known as ghost kitchens, are emerging as a cost-effective way for aspiring chefs and food entrepreneurs to launch their businesses without the overhead of a full restaurant.
+   469→
+   470→Social media has played a crucial role in the growth of Accra's food scene. Food bloggers and Instagram creators have built large followings by documenting the city's culinary offerings, creating buzz around new openings and driving foot traffic to restaurants. Hashtags related to Ghanaian food regularly trend on social media, both locally and among the diaspora community.
+   471→
+   472→Despite the positive momentum, challenges persist. High import duties on kitchen equipment and specialised ingredients make it expensive to run a restaurant. Inconsistent power supply and water access add to operational costs. And while the middle class in Accra is growing, dining out remains a luxury for many Ghanaians, limiting the size of the potential market.
+   473→
+   474→Nevertheless, the trajectory is clear. Accra's food scene is on an upward trajectory, and the chefs and entrepreneurs driving this transformation are just getting started.`,
+   475→    status: "published",
+   476→    isFeatured: false,
+   477→    isPinned: false,
+   478→    isBreaking: false,
+   479→    publishedAt: daysAgo(3, 18, 0),
+   480→    categorySlug: "lifestyle",
+   481→    authorEmail: "reporter2@newsportal.com",
+   482→    tagNames: ["Tourism", "Agriculture"],
+   483→  },
+   484→  {
+   485→    title: "Tamale Airport Expansion Set to Boost Northern Ghana's Economic Development",
+   486→    slug: "tamale-airport-expansion-boost-northern-ghana-economic-development",
+   487→    excerpt:
+   488→      "The Ghana Airports Authority has commenced work on a major expansion of Tamale Airport, a project expected to transform the economic landscape of the northern regions.",
+   489→    content: `The Ghana Airports Authority has commenced work on a major expansion and upgrade of the Tamale Airport, a project that is expected to transform the economic landscape of northern Ghana and open up the region to new investment, trade, and tourism opportunities. The project, which is being funded through a combination of government allocation and a concessionary loan from the African Development Bank, represents one of the largest infrastructure investments in the northern part of the country.
+   490→
+   491→The expansion includes the construction of a new terminal building with a capacity of one million passengers per year, the extension and reinforcement of the runway to accommodate larger aircraft, the installation of modern navigation and lighting systems, and the development of a cargo terminal to facilitate the export of agricultural products from the region. The total cost of the project is estimated at $250 million, with completion expected within three years.
+   492→
+   493→Tamale is the capital of the Northern Region and the largest city in northern Ghana, with a population of approximately 400,000. The city serves as a commercial and transportation hub for the northern half of the country, but its economic potential has been constrained by limited air connectivity and inadequate infrastructure. Currently, the airport handles only a handful of domestic flights per day, primarily to and from Accra and Kumasi.
+   494→
+   495→The expansion is expected to have far-reaching economic benefits for the region. Improved air connectivity will make it easier for businesses to access the northern market, attracting investment in sectors such as agribusiness, manufacturing, and tourism. The cargo terminal will enable farmers in the region to export fresh produce, including mangoes, shea products, and cashew nuts, directly to international markets, bypassing the lengthy and costly overland journey to Tema or Takoradi harbours.
+   496→
+   497→The tourism sector stands to benefit significantly. The northern regions are home to some of Ghana's most compelling cultural and natural attractions, including the Larabanga Mosque (one of the oldest mosques in West Africa), the Mole National Park, the Savannah landscapes of the Upper East and Upper West Regions, and the vibrant festivals of the various ethnic groups that call the region home. Improved air access is expected to boost tourist arrivals to the region by an estimated 40 percent within the first two years of the expanded airport's operation.
+   498→
+   499→Local communities have expressed optimism about the project but have also raised concerns about land acquisition, displacement, and the equitable distribution of benefits. The Ghana Airports Authority has established a community liaison committee to address these concerns and ensure that affected communities are adequately compensated and supported throughout the construction process.
+   500→
+   501→The Northern Regional Minister described the project as "a game-changer for the development of northern Ghana" and called on the private sector to begin planning investments that will take advantage of the improved infrastructure. "For too long, the northern regions have been left behind in terms of infrastructure and economic development," the minister said. "This airport expansion is a powerful signal that this is changing."
+   502→
+   503→Construction is being carried out by a joint venture between a Ghanaian construction firm and an international aviation infrastructure company, creating an estimated 1,500 direct jobs during the construction phase and several hundred permanent jobs once the expanded airport is operational.`,
+   504→    status: "published",
+   505→    isFeatured: false,
+   506→    isPinned: false,
+   507→    isBreaking: false,
+   508→    publishedAt: daysAgo(6, 12, 0),
+   509→    categorySlug: "regional-news",
+   510→    authorEmail: "reporter1@newsportal.com",
+   511→    tagNames: ["Infrastructure", "Agriculture", "Tourism"],
+   512→  },
+   513→  {
+   514→    title: "COVID-19 Pandemic Lessons: Ghana's Health System Preparedness for Future Outbreaks",
+   515→    slug: "covid-19-pandemic-lessons-ghana-health-system-preparedness-future-outbreaks",
+   516→    excerpt:
+   517→      "Health officials review the lessons learned from the COVID-19 pandemic and outline measures being taken to strengthen Ghana's preparedness for future public health emergencies.",
+   518→    content: `Three years after the World Health Organization declared the COVID-19 pandemic, Ghana's health authorities are taking stock of the lessons learned and implementing comprehensive reforms to strengthen the country's preparedness for future public health emergencies. The pandemic, which claimed over 1,600 lives in Ghana and infected more than 170,000 people, exposed both strengths and critical weaknesses in the country's health system.
+   519→
+   520→Ghana's initial response to the pandemic was widely praised. The country was among the first in Africa to implement comprehensive testing, contact tracing, and quarantine measures. The Ghana Health Service rapidly established testing centres across all 16 regions, leveraging the existing polio surveillance infrastructure. The government's aggressive public communication campaign, including regular televised addresses by the president, helped to build public trust and compliance with preventive measures.
+   521→
+   522→The pandemic also catalysed innovation in Ghana's health sector. Local pharmaceutical companies began manufacturing personal protective equipment, hand sanitiser, and eventually participated in vaccine production discussions. Technology was deployed in novel ways, including the use of drones for delivering COVID-19 test samples from remote areas to testing laboratories in Accra, a partnership with Zipline that was later expanded to deliver blood products and essential medicines.
+   523→
+   524→However, the pandemic also revealed deep structural weaknesses. Ghana's healthcare system, which spends approximately 4 percent of GDP on health (below the African Union's target of 15 percent), was quickly overwhelmed. Hospital bed capacity, intensive care unit beds, and ventilator supplies were insufficient to handle a major surge in cases. The dependence on imported medical supplies, including essential drugs and equipment, created dangerous vulnerabilities when global supply chains were disrupted.
+   525→
+   526→The health workforce, already stretched thin before the pandemic, faced unprecedented pressure. Healthcare workers reported burnout, mental health challenges, and inadequate protection, particularly in the early months of the pandemic. Several healthcare workers lost their lives to COVID-19, highlighting the risks faced by those on the frontlines of the response.
+   527→
+   528→In response to these challenges, the government has developed a National Health Security Action Plan that outlines a comprehensive set of reforms. Key elements include the establishment of a National Public Health Emergency Operations Centre, the expansion of intensive care capacity in regional hospitals, the development of local pharmaceutical manufacturing capabilities, and the creation of a strategic national stockpile of essential medical supplies.
+   529→
+   530→The plan also emphasises the importance of data-driven decision-making in public health emergency response. A new electronic disease surveillance system is being deployed that will enable real-time monitoring of disease outbreaks across the country, with automated alert mechanisms that trigger rapid response protocols when threshold levels are reached.
+   531→
+   532→Community engagement and trust-building are identified as critical success factors. The pandemic demonstrated that public compliance with health measures is heavily influenced by trust in government institutions and health authorities. Investment in community health education, the training of community health volunteers, and the strengthening of relationships between health facilities and the communities they serve are all prioritised in the new plan.
+   533→
+   534→International partnerships remain essential. Ghana continues to work with the WHO, the Africa CDC, and bilateral partners to strengthen its health security capabilities. The country's participation in the COVAX facility for vaccine distribution, while not without challenges, provided valuable lessons in international health cooperation.
+   535→
+   536→The Director General of the Ghana Health Service has emphasised that preparedness is an ongoing process, not a one-time achievement. "The next pandemic may not be like COVID-19," he said. "It could be a new influenza strain, a drug-resistant infection, or something entirely unexpected. Our health system must be resilient enough to adapt and respond effectively regardless of the nature of the threat."`,
+   537→    status: "published",
+   538→    isFeatured: false,
+   539→    isPinned: false,
+   540→    isBreaking: false,
+   541→    publishedAt: daysAgo(5, 15, 45),
+   542→    categorySlug: "health",
+   543→    authorEmail: "reporter1@newsportal.com",
+   544→    tagNames: ["COVID-19", "Healthcare"],
+   545→  },
+   546→  // ── DRAFT ARTICLES (3) ────────────────────
+   547→  {
+   548→    title: "Ghana's Renewable Energy Sector Attracts $500 Million in New Investments",
+   549→    slug: "ghana-renewable-energy-sector-attracts-500-million-new-investments",
+   550→    excerpt:
+   551→      "International investors are pouring money into Ghana's solar and wind energy projects as the country accelerates its transition to cleaner energy sources.",
+   552→    content: `Ghana's renewable energy sector is experiencing an unprecedented wave of investment, with over $500 million in new commitments announced in the past quarter alone. The investments, which span solar, wind, and biomass energy projects, reflect growing international confidence in Ghana's energy transition agenda and the country's vast untapped renewable energy potential.
+   553→
+   554→The largest single investment comes from a consortium of European and Middle Eastern investors who have committed $300 million to develop a 250-megawatt solar farm in the Buipe area of the Savannah Region. The project, which will be one of the largest solar installations in West Africa, is expected to generate enough electricity to power approximately 200,000 homes and create over 500 jobs during the construction phase.
+   555→
+   556→A separate $120 million investment will fund the development of wind energy infrastructure along the coast of the Greater Accra and Central Regions, where wind speed studies have identified excellent conditions for commercial wind power generation. The project includes the installation of 40 wind turbines with a combined capacity of 80 megawatts.
+   557→
+   558→The government has welcomed the investments and reaffirmed its commitment to increasing the share of renewable energy in the national energy mix to 10 percent by 2030, up from the current level of approximately 2 percent. The Renewable Energy Act provides a framework for incentivising private sector investment in the sector, including feed-in tariffs, tax holidays, and streamlined licensing procedures.
+   559→
+   560→However, experts have cautioned that realising the full potential of renewable energy in Ghana will require significant upgrades to the national grid infrastructure. The current grid was designed primarily for large-scale hydroelectric and thermal power generation and may require modifications to accommodate the intermittent nature of solar and wind power. Energy storage solutions, including battery technology, will also need to be deployed at scale.
+   561→
+   562→This article is currently being developed and will include interviews with key stakeholders in the energy sector, detailed analysis of the economic impact of renewable energy investments, and a comparison of Ghana's renewable energy trajectory with that of other African countries.`,
+   563→    status: "draft",
+   564→    isFeatured: false,
+   565→    isPinned: false,
+   566→    isBreaking: false,
+   567→    publishedAt: null,
+   568→    categorySlug: "technology",
+   569→    authorEmail: "reporter1@newsportal.com",
+   570→    tagNames: ["Energy", "Climate", "Technology Policy"],
+   571→  },
+   572→  {
+   573→    title: "Women in Ghana's Tech Ecosystem: Breaking Barriers and Building the Future",
+   574→    slug: "women-ghana-tech-ecosystem-breaking-barriers-building-future",
+   575→    excerpt:
+   576→      "Despite significant progress, women remain underrepresented in Ghana's growing technology sector. This feature explores the challenges and celebrates the trailblazers leading change.",
+   577→    content: `Ghana's technology ecosystem is one of the fastest-growing in West Africa, but a significant gender gap persists. Women make up only about 30 percent of the technology workforce in Ghana, and the disparity is even more pronounced in leadership positions and technical roles. This feature examines the root causes of this imbalance and highlights the women who are working to change the narrative.
+   578→
+   579→The gender gap in technology begins early. In Ghanaian senior high schools, significantly fewer girls than boys enrol in science, technology, engineering, and mathematics (STEM) programmes. Societal expectations, limited access to role models, and a lack of targeted encouragement all contribute to this disparity. By the time students reach the university level, women are significantly underrepresented in computer science, information technology, and engineering programmes.
+   580→
+   581→Several organisations are working to address this imbalance at the grassroots level. Initiatives such as Girls in ICT, Tech Needs Girls, and the Women in Tech Africa network provide mentorship, training, and community support for young women and girls interested in technology. These programmes have reached thousands of participants across Ghana and have contributed to a gradual increase in female enrollment in STEM programmes at the tertiary level.
+   582→
+   583→In the professional sphere, a growing number of women are making their mark in Ghana's tech ecosystem. Female founders have launched successful startups in areas ranging from fintech and healthtech to agritech and e-commerce. Women are also increasingly visible in corporate technology leadership roles, though progress remains slow.
+   584→
+   585→The economic case for gender diversity in technology is compelling. Research consistently shows that diverse teams produce better outcomes, and companies with women in leadership positions tend to be more profitable and innovative. In a sector that is critical to Ghana's economic future, the exclusion of half the population represents a significant loss of talent and potential.
+   586→
+   587→This article is a work in progress. Additional interviews with female tech leaders, data analysis on gender representation in Ghanaian tech companies, and policy recommendations will be added before publication.`,
+   588→    status: "draft",
+   589→    isFeatured: false,
+   590→    isPinned: false,
+   591→    isBreaking: false,
+   592→    publishedAt: null,
+   593→    categorySlug: "technology",
+   594→    authorEmail: "reporter2@newsportal.com",
+   595→    tagNames: ["Gender", "Youth", "Technology Policy"],
+   596→  },
+   597→  {
+   598→    title: "The Future of Ghana's Cocoa Industry in a Changing Climate",
+   599→    slug: "future-ghana-cocoa-industry-changing-climate",
+   600→    excerpt:
+   601→      "Climate change, ageing farms, and volatile global prices pose existential threats to Ghana's cocoa industry, the backbone of the rural economy for millions of families.",
+   602→    content: `Ghana is the world's second-largest cocoa producer after neighbouring Côte d'Ivoire, and the cocoa industry is a cornerstone of the Ghanaian economy. The crop contributes approximately $2 billion in export earnings annually and provides livelihoods for over 800,000 farming households. Yet, the industry faces a confluence of challenges that threaten its long-term viability and the millions of livelihoods that depend on it.
+   603→
+   604→Climate change is perhaps the most existential of these threats. Rising temperatures and changing rainfall patterns are altering the climatic conditions in Ghana's cocoa-growing regions, which are concentrated in the forest belt of the Ashanti, Brong-Ahafo, Western, Central, and Eastern Regions. Studies project that under current climate trajectories, the area suitable for cocoa cultivation in Ghana could shrink by 30 to 50 percent by 2050.
+   605→
+   606→The ageing of Ghana's cocoa farms is another critical concern. A significant proportion of the country's cocoa trees are over 30 years old, well beyond their peak productive years. Replanting programmes have been implemented by COCOBOD, the Ghana Cocoa Board, but the pace of replanting has not kept up with the rate of tree ageing. Many smallholder farmers, who produce approximately 70 percent of Ghana's cocoa, lack the resources and technical knowledge to undertake large-scale rehabilitation of their farms.
+   607→
+   608→Global cocoa prices have been highly volatile in recent years, creating uncertainty for farmers and undermining investment in the sector. While prices surged to record levels in 2024, driven by supply deficits, the benefits have not always translated into higher incomes for smallholder farmers due to structural inefficiencies in the supply chain and the weakening of the cedi against major currencies.
+   609→
+   610→COCOBOD has introduced several reforms aimed at addressing these challenges, including the Cocoa Forest Initiative, which promotes climate-smart cocoa production, and the Living Income Differential (LID) in partnership with Côte d'Ivoire, which adds a premium to the cocoa price to ensure farmers earn a living income.
+   611→
+   612→This article requires additional research, including interviews with cocoa farmers, COCOBOD officials, and commodity market analysts. A comprehensive analysis of climate adaptation strategies and market dynamics will be included in the final version.`,
+   613→    status: "draft",
+   614→    isFeatured: false,
+   615→    isPinned: false,
+   616→    isBreaking: false,
+   617→    publishedAt: null,
+   618→    categorySlug: "business",
+   619→    authorEmail: "reporter1@newsportal.com",
+   620→    tagNames: ["Agriculture", "Climate", "Economy", "Trade"],
+   621→  },
+   622→];
+   623→
+   624→// ─────────────────────────────────────────────
+   625→// 5. COMMENTS (5)
+   626→// ─────────────────────────────────────────────
+   627→const comments = [
+   628→  {
+   629→    content:
+   630→      "This is a well-written and balanced article on the elections. I appreciate how you covered both the strengths of the process and the challenges that need to be addressed. Ghana continues to set an example for democratic governance in Africa.",
+   631→    status: "approved",
+   632→    authorName: "Emmanuel Mensah",
+   633→    authorEmail: "emmanuel.mensah@email.com",
+   634→    articleSlug: "ghana-2024-election-results-new-chapter-democratic-governance",
+   635→    userEmail: null,
+   636→  },
+   637→  {
+   638→    content:
+   639→      "As a small business owner who relies heavily on mobile money, I can attest to the transformative impact of digital financial services. However, the transaction fees have been increasing, and I hope the regulators will address this to protect consumers.",
+   640→    status: "approved",
+   641→    authorName: "Abena Konadu",
+   642→    authorEmail: "abena.k@email.com",
+   643→    articleSlug: "mobile-money-transactions-ghana-surpass-1-trillion-cedis",
+   644→    userEmail: null,
+   645→  },
+   646→  {
+   647→    content:
+   648→      "The Black Stars performance was truly inspiring! I was at the stadium and the atmosphere was incredible. Let's hope we can maintain this form and go all the way to the AFCON final. Go Black Stars!",
+   649→    status: "approved",
+   650→    authorName: "Kofi Boateng",
+   651→    authorEmail: "kofi.b@email.com",
+   652→    articleSlug: "black-stars-crucial-afcon-qualifier-win-against-nigeria-accra",
+   653→    userEmail: null,
+   654→  },
+   655→  {
+   656→    content:
+   657→      "While the economic numbers look promising, the reality on the ground for ordinary Ghanaians is still very tough. Prices in the market are still very high and salaries have not kept pace. I hope this growth translates into real improvements in people's lives soon.",
+   658→    status: "pending",
+   659→    authorName: "Nana Akua",
+   660→    authorEmail: "nana.akua@email.com",
+   661→    articleSlug: "ghana-economy-recovery-gdp-growth-4-2-percent",
+   662→    userEmail: null,
+   663→  },
+   664→  {
+   665→    content:
+   666→      "Stonebwoy deserves this and more! Ghanaian artists are putting us on the map globally. I would love to see more support from the government for the creative arts sector. We have so much talent that needs nurturing.",
+   667→    status: "approved",
+   668→    authorName: "David Osei",
+   669→    authorEmail: "david.osei@email.com",
+   670→    articleSlug: "stonebwoy-wins-best-african-act-international-music-awards-london",
+   671→    userEmail: null,
+   672→  },
+   673→];
+   674→
+   675→// ─────────────────────────────────────────────
+   676→// 6. ADVERTISEMENTS (3)
+   677→// ─────────────────────────────────────────────
+   678→const advertisements = [
+   679→  {
+   680→    title: "Ghana Commercial Bank - Smart Banking for Everyone",
+   681→    imageUrl: "https://picsum.photos/seed/gcb-banner-ad/1200/200",
+   682→    linkUrl: "https://example.com/gcb",
+   683→    position: "banner",
+   684→    isActive: true,
+   685→    startDate: daysAgo(2),
+   686→    endDate: daysAgo(-30),
+   687→    clicks: 1245,
+   688→    impressions: 85000,
+   689→  },
+   690→  {
+   691→    title: "Safari Tours Ghana - Explore the Beauty of West Africa",
+   692→    imageUrl: "https://picsum.photos/seed/safari-sidebar-ad/300/250",
+   693→    linkUrl: "https://example.com/safari-tours",
+   694→    position: "sidebar",
+   695→    isActive: true,
+   696→    startDate: daysAgo(5),
+   697→    endDate: daysAgo(-25),
+   698→    clicks: 432,
+   699→    impressions: 42000,
+   700→  },
+   701→  {
+   702→    title: "Voltic Water - Pure Refreshment from Nature",
+   703→    imageUrl: "https://picsum.photos/seed/voltic-footer-ad/728/90",
+   704→    linkUrl: "https://example.com/voltic",
+   705→    position: "footer",
+   706→    isActive: true,
+   707→    startDate: daysAgo(3),
+   708→    endDate: daysAgo(-20),
+   709→    clicks: 678,
+   710→    impressions: 65000,
+   711→  },
+   712→];
+   713→
+   714→// ─────────────────────────────────────────────
+   715→// 7. ACTIVITIES (10)
+   716→// ─────────────────────────────────────────────
+   717→const activities = [
+   718→  {
+   719→    type: "view",
+   720→    metadata: JSON.stringify({ ip: "41.58.12.90", userAgent: "Mozilla/5.0" }),
+   721→    createdAt: daysAgo(0, 10, 0),
+   722→    userEmail: null,
+   723→    articleSlug: "ghana-2024-election-results-new-chapter-democratic-governance",
+   724→  },
+   725→  {
+   726→    type: "view",
+   727→    metadata: JSON.stringify({ ip: "102.156.88.44", userAgent: "Mozilla/5.0" }),
+   728→    createdAt: daysAgo(0, 9, 30),
+   729→    userEmail: null,
+   730→    articleSlug: "black-stars-crucial-afcon-qualifier-win-against-nigeria-accra",
+   731→  },
+   732→  {
+   733→    type: "comment",
+   734→    metadata: JSON.stringify({ commentId: "pending" }),
+   735→    createdAt: daysAgo(0, 8, 15),
+   736→    userEmail: "emmanuel.mensah@email.com",
+   737→    articleSlug: "ghana-2024-election-results-new-chapter-democratic-governance",
+   738→  },
+   739→  {
+   740→    type: "view",
+   741→    metadata: JSON.stringify({ ip: "197.251.44.12", userAgent: "Mozilla/5.0" }),
+   742→    createdAt: daysAgo(1, 14, 0),
+   743→    userEmail: null,
+   744→    articleSlug: "ghana-economy-recovery-gdp-growth-4-2-percent",
+   745→  },
+   746→  {
+   747→    type: "view",
+   748→    metadata: JSON.stringify({ ip: "41.203.67.89", userAgent: "Mozilla/5.0" }),
+   749→    createdAt: daysAgo(1, 10, 0),
+   750→    userEmail: null,
+   751→    articleSlug: "ghana-launches-national-ai-strategy-digital-transformation",
+   752→  },
+   753→  {
+   754→    type: "login",
+   755→    metadata: JSON.stringify({ ip: "41.58.12.90", provider: "credentials" }),
+   756→    createdAt: daysAgo(1, 8, 0),
+   757→    userEmail: "admin@newsportal.com",
+   758→    articleSlug: null,
+   759→  },
+   760→  {
+   761→    type: "view",
+   762→    metadata: JSON.stringify({ ip: "102.156.77.33", userAgent: "Mozilla/5.0" }),
+   763→    createdAt: daysAgo(2, 11, 0),
+   764→    userEmail: null,
+   765→    articleSlug: "stonebwoy-wins-best-african-act-international-music-awards-london",
+   766→  },
+   767→  {
+   768→    type: "create",
+   769→    metadata: JSON.stringify({ model: "Article", title: "Ghana Launches National AI Strategy" }),
+   770→    createdAt: daysAgo(1, 9, 0),
+   771→    userEmail: "reporter1@newsportal.com",
+   772→    articleSlug: "ghana-launches-national-ai-strategy-digital-transformation",
+   773→  },
+   774→  {
+   775→    type: "comment",
+   776→    metadata: JSON.stringify({ commentId: "pending" }),
+   777→    createdAt: daysAgo(0, 20, 30),
+   778→    userEmail: "kofi.b@email.com",
+   779→    articleSlug: "black-stars-crucial-afcon-qualifier-win-against-nigeria-accra",
+   780→  },
+   781→  {
+   782→    type: "view",
+   783→    metadata: JSON.stringify({ ip: "197.251.66.21", userAgent: "Mozilla/5.0" }),
+   784→    createdAt: daysAgo(3, 18, 0),
+   785→    userEmail: null,
+   786→    articleSlug: "accras-emerging-food-scene-ghanaian-chefs-redefining-west-african-cuisine",
+   787→  },
+   788→];
+   789→
+   790→// ─────────────────────────────────────────────
+   791→// Helper: calculate reading time from word count
+   792→// ─────────────────────────────────────────────
+   793→function calculateReadingTime(content: string): number {
+   794→  const words = content.split(/\s+/).filter(Boolean).length;
+   795→  return Math.max(1, Math.ceil(words / 200));
+   796→}
+   797→
+   798→// ─────────────────────────────────────────────
+   799→// MAIN SEED FUNCTION
+   800→// ─────────────────────────────────────────────
+   801→async function main() {
+   802→  console.log("🌱 Seeding database...\n");
+   803→
+   804→  // Clean up existing data (order matters due to relations)
+   805→  console.log("🗑️  Cleaning existing data...");
+   806→  await prisma.activity.deleteMany();
+   807→  await prisma.comment.deleteMany();
+   808→  await prisma.articleTag.deleteMany();
+   809→  await prisma.article.deleteMany();
+   810→  await prisma.advertisement.deleteMany();
+   811→  await prisma.tag.deleteMany();
+   812→  await prisma.category.deleteMany();
+   813→  await prisma.media.deleteMany();
+   814→  await prisma.user.deleteMany();
+   815→  console.log("✅ Existing data cleaned.\n");
+   816→
+   817→  // ── 1. Seed Users ─────────────────────────
+   818→  console.log("👤 Seeding users...");
+   819→  const createdUsers: Record<string, { id: string; email: string }> = {};
+   820→  for (const user of users) {
+   821→    const passwordHash = await bcrypt.hash(user.password, 12);
+   822→    const created = await prisma.user.create({
+   823→      data: {
+   824→        email: user.email,
+   825→        name: user.name,
+   826→        passwordHash,
+   827→        role: user.role,
+   828→        bio: user.bio,
+   829→        isActive: true,
+   830→      },
+   831→    });
+   832→    createdUsers[created.email] = created;
+   833→    console.log(`   ✅ ${created.name} (${created.role})`);
+   834→  }
+   835→  console.log("");
+   836→
+   837→  // ── 2. Seed Categories ────────────────────
+   838→  console.log("📂 Seeding categories...");
+   839→  const createdCategories: Record<string, { id: string; slug: string }> = {};
+   840→  for (const cat of categories) {
+   841→    const created = await prisma.category.create({
+   842→      data: cat,
+   843→    });
+   844→    createdCategories[created.slug] = created;
+   845→    console.log(`   ✅ ${created.name} (${created.color})`);
+   846→  }
+   847→  console.log("");
+   848→
+   849→  // ── 3. Seed Tags ──────────────────────────
+   850→  console.log("🏷️  Seeding tags...");
+   851→  const createdTags: Record<string, { id: string; name: string }> = {};
+   852→  for (const tag of tags) {
+   853→    const created = await prisma.tag.create({
+   854→      data: tag,
+   855→    });
+   856→    createdTags[created.name] = created;
+   857→  }
+   858→  console.log(`   ✅ ${tags.length} tags created.\n`);
+   859→
+   860→  // ── 4. Seed Articles ──────────────────────
+   861→  console.log("📰 Seeding articles...");
+   862→  for (const article of articles) {
+   863→    const author = createdUsers[article.authorEmail];
+   864→    const category = createdCategories[article.categorySlug];
+   865→
+   866→    const readingTime = calculateReadingTime(article.content);
+   867→    const featuredImage = `https://picsum.photos/seed/${article.slug}/1200/600`;
+   868→
+   869→    const createdArticle = await prisma.article.create({
+   870→      data: {
+   871→        title: article.title,
+   872→        slug: article.slug,
+   873→        excerpt: article.excerpt,
+   874→        content: article.content,
+   875→        featuredImage,
+   876→        status: article.status,
+   877→        isFeatured: article.isFeatured,
+   878→        isPinned: article.isPinned,
+   879→        isBreaking: article.isBreaking,
+   880→        publishedAt: article.publishedAt,
+   881→        readingTime,
+   882→        authorId: author.id,
+   883→        categoryId: category.id,
+   884→        seoTitle: article.title,
+   885→        seoDescription: article.excerpt,
+   886→      },
+   887→    });
+   888→
+   889→    // Connect tags
+   890→    for (const tagName of article.tagNames) {
+   891→      const tag = createdTags[tagName];
+   892→      if (tag) {
+   893→        await prisma.articleTag.create({
+   894→          data: {
+   895→            articleId: createdArticle.id,
+   896→            tagId: tag.id,
+   897→          },
+   898→        });
+   899→      }
+   900→    }
+   901→
+   902→    const statusLabel = article.status === "published" ? "🟢" : "📝";
+   903→    const extras = [];
+   904→    if (article.isFeatured) extras.push("featured");
+   905→    if (article.isPinned) extras.push("pinned");
+   906→    if (article.isBreaking) extras.push("⚡breaking");
+   907→    const extrasStr = extras.length > 0 ? ` [${extras.join(", ")}]` : "";
+   908→    console.log(
+   909→      `   ${statusLabel} "${article.title.substring(0, 60)}..."${extrasStr}`
+   910→    );
+   911→  }
+   912→  console.log("");
+   913→
+   914→  // ── 5. Seed Comments ──────────────────────
+   915→  console.log("💬 Seeding comments...");
+   916→  for (const comment of comments) {
+   917→    const article = await prisma.article.findUnique({
+   918→      where: { slug: comment.articleSlug },
+   919→    });
+   920→
+   921→    let userId: string | null = null;
+   922→    if (comment.userEmail) {
+   923→      const user = await prisma.user.findUnique({
+   924→        where: { email: comment.userEmail },
+   925→      });
+   926→      if (user) userId = user.id;
+   927→    }
+   928→
+   929→    if (article) {
+   930→      await prisma.comment.create({
+   931→        data: {
+   932→          content: comment.content,
+   933→          status: comment.status,
+   934→          authorName: comment.authorName,
+   935→          authorEmail: comment.authorEmail,
+   936→          articleId: article.id,
+   937→          userId,
+   938→        },
+   939→      });
+   940→      console.log(
+   941→        `   ✅ ${comment.authorName} on "${comment.articleSlug.substring(0, 50)}..." [${comment.status}]`
+   942→      );
+   943→    }
+   944→  }
+   945→  console.log("");
+   946→
+   947→  // ── 6. Seed Advertisements ────────────────
+   948→  console.log("📢 Seeding advertisements...");
+   949→  for (const ad of advertisements) {
+   950→    await prisma.advertisement.create({
+   951→      data: ad,
+   952→    });
+   953→    console.log(`   ✅ "${ad.title}" [${ad.position}]`);
+   954→  }
+   955→  console.log("");
+   956→
+   957→  // ── 7. Seed Activities ────────────────────
+   958→  console.log("📊 Seeding activities...");
+   959→  for (const activity of activities) {
+   960→    let userId: string | null = null;
+   961→    if (activity.userEmail) {
+   962→      const user = await prisma.user.findUnique({
+   963→        where: { email: activity.userEmail },
+   964→      });
+   965→      if (user) userId = user.id;
+   966→    }
+   967→
+   968→    let articleId: string | null = null;
+   969→    if (activity.articleSlug) {
+   970→      const article = await prisma.article.findUnique({
+   971→        where: { slug: activity.articleSlug },
+   972→      });
+   973→      if (article) articleId = article.id;
+   974→    }
+   975→
+   976→    await prisma.activity.create({
+   977→      data: {
+   978→        type: activity.type,
+   979→        metadata: activity.metadata,
+   980→        createdAt: activity.createdAt,
+   981→        userId,
+   982→        articleId,
+   983→      },
+   984→    });
+   985→    console.log(`   ✅ ${activity.type} at ${activity.createdAt.toISOString()}`);
+   986→  }
+   987→  console.log("");
+   988→
+   989→  // ── Summary ───────────────────────────────
+   990→  const userCount = await prisma.user.count();
+   991→  const categoryCount = await prisma.category.count();
+   992→  const tagCount = await prisma.tag.count();
+   993→  const articleCount = await prisma.article.count();
+   994→  const commentCount = await prisma.comment.count();
+   995→  const adCount = await prisma.advertisement.count();
+   996→  const activityCount = await prisma.activity.count();
+   997→
+   998→  console.log("═══════════════════════════════════════");
+   999→  console.log("          SEED COMPLETE                ");
+  1000→  console.log("═══════════════════════════════════════");
+  1001→  console.log(`  👤 Users:          ${userCount}`);
+  1002→  console.log(`  📂 Categories:     ${categoryCount}`);
+  1003→  console.log(`  🏷️  Tags:           ${tagCount}`);
+  1004→  console.log(`  📰 Articles:       ${articleCount}`);
+  1005→  console.log(`  💬 Comments:       ${commentCount}`);
+  1006→  console.log(`  📢 Advertisements: ${adCount}`);
+  1007→  console.log(`  📊 Activities:     ${activityCount}`);
+  1008→  console.log("═══════════════════════════════════════\n");
+  1009→}
+  1010→
+  1011→// ── Run ──────────────────────────────────────
+  1012→main()
+  1013→  .then(async () => {
+  1014→    await prisma.$disconnect();
+  1015→  })
+  1016→  .catch(async (e) => {
+  1017→    console.error("❌ Seed failed:", e);
+  1018→    await prisma.$disconnect();
+  1019→    process.exit(1);
+  1020→  });
