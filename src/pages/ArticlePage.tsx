@@ -159,12 +159,12 @@ export default function ArticlePage() {
               onClick={() =>
                 navigate({
                   type: 'category',
-                  slug: article.category.slug,
-                  categoryName: article.category.name,
+                  slug: article.category?.slug || '',
+                  categoryName: article.category?.name || '',
                 })
               }
             >
-              {article.category.name}
+              {article.category?.name || 'Uncategorized'}
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -195,15 +195,15 @@ export default function ArticlePage() {
       {/* Author / Meta Row */}
       <div className="flex flex-wrap items-center gap-3">
         <Avatar className="h-9 w-9">
-          {article.author.avatar && (
-            <AvatarImage src={article.author.avatar} alt={article.author.name} />
+          {article.author?.avatar && (
+            <AvatarImage src={article.author.avatar} alt={article.author?.name || ''} />
           )}
           <AvatarFallback className="text-xs bg-primary text-primary-foreground">
             {(article.author?.name || 'A').charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div>
-          <p className="text-sm font-medium">{article.author.name}</p>
+          <p className="text-sm font-medium">{article.author?.name || 'Unknown'}</p>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Calendar className="h-3 w-3" />
@@ -223,9 +223,9 @@ export default function ArticlePage() {
         </div>
         <Badge
           className="ml-auto text-white text-xs"
-          style={{ backgroundColor: article.category.color }}
+          style={{ backgroundColor: article.category?.color || '#888' }}
         >
-          {article.category.name}
+          {article.category?.name || 'Uncategorized'}
         </Badge>
       </div>
 
@@ -356,13 +356,13 @@ export default function ArticlePage() {
           onClick={() =>
             navigate({
               type: 'category',
-              slug: article.category.slug,
-              categoryName: article.category.name,
+              slug: article.category?.slug || '',
+              categoryName: article.category?.name || '',
             })
           }
         >
           <ChevronLeft className="h-4 w-4 mr-1" />
-          More in {article.category.name}
+          More in {article.category?.name || 'Uncategorized'}
         </Button>
         <Button
           variant="outline"
