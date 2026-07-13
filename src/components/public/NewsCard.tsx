@@ -2,7 +2,7 @@
 
 import { useStore, type Article } from '@/lib/store'
 import { Badge } from '@/components/ui/badge'
-import { Clock, Eye, User } from 'lucide-react'
+import { Clock, Eye } from 'lucide-react'
 import { formatDistanceToNow, format } from 'date-fns'
 
 interface NewsCardProps {
@@ -36,12 +36,6 @@ export default function NewsCard({ article, variant = 'default' }: NewsCardProps
 
   const metaInfo = (
     <div className="flex items-center gap-3 text-xs text-muted-foreground">
-      {article.author?.name && (
-        <span className="flex items-center gap-1">
-          <User className="h-3 w-3" />
-          {article.author.name}
-        </span>
-      )}
       <span title={absoluteDate}>{dateDisplay}</span>
       {article.readingTime > 0 && (
         <span className="flex items-center gap-1">
@@ -84,12 +78,6 @@ export default function NewsCard({ article, variant = 'default' }: NewsCardProps
             </p>
           )}
           <div className="mt-3 flex items-center gap-3 text-xs text-white/70">
-            {article.author?.name && (
-              <span className="flex items-center gap-1">
-                <User className="h-3 w-3" />
-                {article.author.name}
-              </span>
-            )}
             <span>{absoluteDate}</span>
             {article.readingTime > 0 && (
               <span className="flex items-center gap-1">

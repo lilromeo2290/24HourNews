@@ -192,35 +192,23 @@ export default function ArticlePage() {
         {article.title}
       </h1>
 
-      {/* Author / Meta Row */}
-      <div className="flex flex-wrap items-center gap-3">
-        <Avatar className="h-9 w-9">
-          {article.author?.avatar && (
-            <AvatarImage src={article.author.avatar} alt={article.author?.name || ''} />
-          )}
-          <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-            {(article.author?.name || 'A').charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <div>
-          <p className="text-sm font-medium">{article.author?.name || 'Unknown'}</p>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              {publishedDate}
-            </span>
-            {article.readingTime > 0 && (
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {article.readingTime} min read
-              </span>
-            )}
-            <span className="flex items-center gap-1">
-              <Eye className="h-3 w-3" />
-              {article.viewCount} views
-            </span>
-          </div>
-        </div>
+      {/* Meta Row */}
+      <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <Calendar className="h-3.5 w-3.5" />
+          {publishedDate}
+        </span>
+        {article.readingTime > 0 && (
+          <span className="flex items-center gap-1">
+            <Clock className="h-3.5 w-3.5" />
+            {article.readingTime} min read
+          </span>
+        )}
+        <span className="flex items-center gap-1">
+          <Eye className="h-3.5 w-3.5" />
+          {article.viewCount} views
+        </span>
+      </div>
         <Badge
           className="ml-auto text-white text-xs"
           style={{ backgroundColor: article.category?.color || '#888' }}
