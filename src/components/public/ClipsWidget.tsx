@@ -98,19 +98,6 @@ export default function ClipsWidget() {
           </button>
         ))}
       </div>
-      {/* Clip titles list */}
-      <div className="space-y-1.5 mt-1">
-        {sampleClips.map((clip) => (
-          <button
-            key={clip.id}
-            onClick={() => setActiveClip(clip)}
-            className="block w-full text-left text-xs text-foreground/80 hover:text-foreground transition-colors truncate"
-            title={clip.title}
-          >
-            {clip.title}
-          </button>
-        ))}
-      </div>
     </div>
   )
 }
