@@ -202,7 +202,45 @@ async function main() {
     console.log('  Updated article: Hanan EOCO');
   }
 
-  // 8. Update admin email if still old one
+  // 9. Ensure Sports category exists
+  let sports = await db.category.findFirst({ where: { slug: 'sports' } });
+  if (!sports) {
+    sports = await db.category.create({
+      data: {
+        name: 'Sports',
+        slug: 'sports',
+        description: 'Sports news, match reports, transfers and scores from Ghana and across the world.',
+        color: '#0060a0',
+        order: 2,
+      }
+    });
+    console.log('  Created category: Sports');
+  }
+
+  // 10. Add Nukunu FC article (Sports)
+  const nukunuSlug = 'nukunu-fc-appoints-steve-puro-general-manager';
+  let nukunuArticle = await db.article.findFirst({ where: { slug: nukunuSlug } });
+  if (!nukunuArticle) {
+    // Create in Sports category
+    await db.article.create({
+      data: {
+        title: 'Nukunu Football Club Appoints Steve Puro as General Manager',
+        slug: nukunuSlug,
+        content: '<p>Nukunu FC is pleased to announce the appointment of Mr. Steve Puro as the club\'s new General Manager, effective immediately.</p><p>Mr. Puro brings a wealth of experience in football administration and management, having previously served as the Chief Executive Officer of Techiman Eleven Wonders. Throughout his career, he has also worked with Wa Power SC and served as the Bono Regional Secretary of Accra Hearts of Oak\'s Regional Chapters Committee.</p><p>The Board is confident that his experience, leadership, and deep understanding of Ghanaian football will play a vital role in advancing the club\'s strategic objectives and strengthening its operations both on and off the pitch.</p><p>The appointment forms part of the club\'s ongoing commitment to building a strong administrative structure capable of driving sustained growth, professionalism, and long-term success.</p><p>The Board, Management, technical team, players, and the entire Nukunu FC family warmly welcome Mr. Steve Puro and wish him every success in his new role.</p>',
+        excerpt: 'Nukunu FC has announced the appointment of Mr. Steve Puro as the club\'s new General Manager, bringing a wealth of experience from Techiman Eleven Wonders, Wa Power SC, and Hearts of Oak.',
+        status: 'published',
+        isFeatured: false,
+        isBreaking: false,
+        viewCount: 5000,
+        authorId: author.id,
+        categoryId: sports.id,
+        publishedAt: new Date(),
+      }
+    });
+    console.log('  Created article: Nukunu FC appoints Steve Puro (Sports)');
+  }
+
+  // 11. Update admin email if still old one
   const admin = await db.user.findFirst({ where: { role: 'super_admin' } });
   if (admin && admin.email === 'admin@newsportal.com') {
     await db.user.update({
