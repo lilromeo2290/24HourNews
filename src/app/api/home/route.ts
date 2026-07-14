@@ -20,6 +20,8 @@ const articleInclude = {
   tags: { include: { tag: true } },
 } satisfies Prisma.ArticleInclude;
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const now = new Date();

@@ -20,6 +20,8 @@ function calculateReadingTime(content: string): number {
   return Math.max(1, Math.ceil(words / wordsPerMinute));
 }
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

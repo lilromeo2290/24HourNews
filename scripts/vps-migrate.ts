@@ -284,7 +284,29 @@ async function main() {
     console.log('  Created article: Anloga DCE Clean-Up (General News)');
   }
 
-  // 14. Update admin email if still old one
+  // 15. Add Klikor Chiefs article (General News)
+  const klikorSlug = 'klikor-chiefs-lobby-government-roads-development-paramount-chiefs-funeral';
+  let klikorArticle = await db.article.findFirst({ where: { slug: klikorSlug } });
+  if (!klikorArticle) {
+    await db.article.create({
+      data: {
+        title: 'Klikor Chiefs Lobby Government for Roads and Development Ahead of Paramount Chief\u2019s Funeral',
+        slug: klikorSlug,
+        content: '<p>ACCRA, July 10, 2026 - The Klikor Traditional Council has appealed to the government for urgent infrastructure support as preparations begin for the final funeral rites of the late Paramount Chief, Torgbuiga Addo VIII.</p><p>A delegation led by the new Paramount Chief, Torgbuiga Addo IX, met officials at the Presidency on Tuesday. They included Chief of Staff Julius Debrah, Presidential Legal Adviser Marietta Brew Oppong, and Minister for Presidential Special Projects Michael Agyekum.</p><p>The Council announced that the funeral is scheduled for October 24, 2026 in Klikor, Ketu South Municipality, with activities starting October 1. Thousands of guests are expected.</p><p>The chiefs requested that major roads into Klikor be rehabilitated before the event to allow smooth movement of mourners. They also called for more government investment in health, education and other projects in Ketu South.</p><p>Torgbuiga Addo VIII died on January 14, 2026 at age 93 after 42 years on the throne. He has been succeeded by Dr. Frank Hukporti, now Torgbuiga Addo IX, a retired Deputy Commissioner of Police.</p>',
+        excerpt: 'The Klikor Traditional Council has appealed to the government for urgent road rehabilitation and infrastructure support ahead of the final funeral rites of the late Paramount Chief, Torgbuiga Addo VIII, scheduled for October 24, 2026.',
+        status: 'published',
+        isFeatured: false,
+        isBreaking: false,
+        viewCount: 4000,
+        authorId: author.id,
+        categoryId: generalNews.id,
+        publishedAt: new Date(),
+      }
+    });
+    console.log('  Created article: Klikor Chiefs (General News)');
+  }
+
+  // 16. Update admin email if still old one
   const admin = await db.user.findFirst({ where: { role: 'super_admin' } });
   if (admin && admin.email === 'admin@newsportal.com') {
     await db.user.update({
