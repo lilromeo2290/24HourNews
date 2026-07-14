@@ -240,7 +240,51 @@ async function main() {
     console.log('  Created article: Nukunu FC appoints Steve Puro (Sports)');
   }
 
-  // 11. Update admin email if still old one
+  // 12. Add Anloga DCE article (Politics + General News)
+  const anlogaSlug = 'anloga-dce-sandra-kpedor-thanks-residents-turnout-national-clean-up';
+  let anlogaArticle = await db.article.findFirst({ where: { slug: anlogaSlug } });
+  if (!anlogaArticle) {
+    await db.article.create({
+      data: {
+        title: 'Anloga DCE Sandra Kpedor Thanks Residents for Turnout in National Clean-Up, Urges Massive Participation on Day 2',
+        slug: anlogaSlug,
+        content: '<p>ANLOGA, VOLTA REGION, July 10, 2026 - The District Chief Executive for Anloga, Hon. Sandra Seyram Kpedor, has expressed gratitude to institutions and individuals who took part in today\'s National General Cleaning Exercise.</p><p>In a statement, Hon. Kpedor commended participants for their commitment, noting that the turnout reflects a shared responsibility to keep the district clean and healthy.</p><p>She is calling on all residents of the Anloga District to join tomorrow\'s exercise in large numbers.</p><p>\u201cTogether, we can build a cleaner, healthier, and safer environment for all,\u201d she said.</p><p>The two-day national exercise is being held under the theme \u201cOur Actions, Our Future: Cleaning Ghana after the Floods.\u201d</p>',
+        excerpt: 'The DCE for Anloga, Hon. Sandra Seyram Kpedor, has commended participants in the National General Cleaning Exercise and is calling on all residents to join Day 2 of the exercise.',
+        status: 'published',
+        isFeatured: false,
+        isBreaking: false,
+        viewCount: 3000,
+        authorId: author.id,
+        categoryId: politics.id,
+        publishedAt: new Date(),
+      }
+    });
+    console.log('  Created article: Anloga DCE Clean-Up (Politics)');
+  }
+
+  // 13. Copy Anloga DCE article to General News
+  const anlogaGNSlug = 'anloga-dce-sandra-kpedor-thanks-residents-turnout-national-clean-up-general-news';
+  let anlogaGNArticle = await db.article.findFirst({ where: { slug: anlogaGNSlug } });
+  if (!anlogaGNArticle) {
+    await db.article.create({
+      data: {
+        title: 'Anloga DCE Sandra Kpedor Thanks Residents for Turnout in National Clean-Up, Urges Massive Participation on Day 2',
+        slug: anlogaGNSlug,
+        content: '<p>ANLOGA, VOLTA REGION, July 10, 2026 - The District Chief Executive for Anloga, Hon. Sandra Seyram Kpedor, has expressed gratitude to institutions and individuals who took part in today\'s National General Cleaning Exercise.</p><p>In a statement, Hon. Kpedor commended participants for their commitment, noting that the turnout reflects a shared responsibility to keep the district clean and healthy.</p><p>She is calling on all residents of the Anloga District to join tomorrow\'s exercise in large numbers.</p><p>\u201cTogether, we can build a cleaner, healthier, and safer environment for all,\u201d she said.</p><p>The two-day national exercise is being held under the theme \u201cOur Actions, Our Future: Cleaning Ghana after the Floods.\u201d</p>',
+        excerpt: 'The DCE for Anloga, Hon. Sandra Seyram Kpedor, has commended participants in the National General Cleaning Exercise and is calling on all residents to join Day 2 of the exercise.',
+        status: 'published',
+        isFeatured: false,
+        isBreaking: false,
+        viewCount: 3000,
+        authorId: author.id,
+        categoryId: generalNews.id,
+        publishedAt: new Date(),
+      }
+    });
+    console.log('  Created article: Anloga DCE Clean-Up (General News)');
+  }
+
+  // 14. Update admin email if still old one
   const admin = await db.user.findFirst({ where: { role: 'super_admin' } });
   if (admin && admin.email === 'admin@newsportal.com') {
     await db.user.update({
